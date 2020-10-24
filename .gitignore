@@ -1,0 +1,5 @@
+/.stir.db
+/main
+/libcaj.a
+*.d
+*.o

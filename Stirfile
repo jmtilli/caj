@@ -1,0 +1,31 @@
+@toplevel
+@strict
+
+@fileinclude @ignore "opts.smk"
+
+$CC ?= "cc"
+$CFLAGS ?= ["-g", "-O2", "-Wall", "-Wextra", "-Wsign-conversion", "-Wno-missing-field-initializers", "-Wno-unused-parameter", "-Wshadow", "-Wstrict-prototypes", "-Wmissing-prototypes", "-Wpointer-arith", "-Werror", "-std=gnu11", "-fPIC"]
+
+$(SRC_LIB) = ["caj.c"]
+$(SRC_PROG) = ["main.c"]
+
+$(SRC) = [@$(SRC_LIB), @$(SRC_PROG)]
+$(OBJ_LIB) = @sufsuball($(SRC_LIB), ".c", ".o")
+$(OBJ) = @sufsuball($(SRC), ".c", ".o")
+$(DEP) = @sufsuball($(SRC), ".c", ".d")
+$(PROG) = @sufsuball($(SRC_PROG), ".c", "")
+
+@phonyrule: 'all': 'main'
+
+@patrule: $(PROG): '%': '%.o' 'libcaj.a'
+@	[$(CC), @$(CFLAGS), "-o", $@, $<, 'libcaj.a']
+
+@patrule: $(OBJ): '%.o': '%.c' '%.d'
+@	[$(CC), @$(CFLAGS), "-c", "-o", $@, $<]
+
+@patrule: $(DEP): '%.d': '%.c'
+@	[$(CC), @$(CFLAGS), "-MM", "-o", $@, $<]
+
+'libcaj.a': $(OBJ_LIB)
+@	["rm", "-f", $@]
+@	["ar", "rvs", $@, @@suffilter($^, ".o")]
