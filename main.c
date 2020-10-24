@@ -72,7 +72,7 @@ struct caj_handler myhandler = {
 
 int main(int argc, char **argv)
 {
-	char *data = " {   \"foo\": [1, 2, 3], \"bar\": 4, \"baz\": {}, \"barf\": []     }";
+	char *data = " {   \"foo\": [1, 2, 3], \"bar\": 4, \"baz\": {}, \"barf\": []   , \"quux\": [true, false, null]  }";
 	int ret;
 	caj_init(&ctx, &myhandler);
 	ret = caj_feed(&ctx, data, strlen(data));

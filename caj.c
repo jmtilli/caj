@@ -617,11 +617,11 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz)
 
 		if (caj->mode == CAJ_MODE_TRUE)
 		{
-			if (data[i] != "true"[sz++])
+			if (data[i] != "true"[caj->sz++])
 			{
 				return -EINVAL;
 			}
-			if (sz < 4)
+			if (caj->sz < 4)
 			{
 				continue;
 			}
@@ -650,11 +650,11 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz)
 		}
 		else if (caj->mode == CAJ_MODE_FALSE)
 		{
-			if (data[i] != "false"[sz++])
+			if (data[i] != "false"[caj->sz++])
 			{
 				return -EINVAL;
 			}
-			if (sz < 5)
+			if (caj->sz < 5)
 			{
 				continue;
 			}
@@ -683,11 +683,11 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz)
 		}
 		else if (caj->mode == CAJ_MODE_NULL)
 		{
-			if (data[i] != "null"[sz++])
+			if (data[i] != "null"[caj->sz++])
 			{
 				return -EINVAL;
 			}
-			if (sz < 4)
+			if (caj->sz < 4)
 			{
 				continue;
 			}
