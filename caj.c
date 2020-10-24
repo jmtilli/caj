@@ -455,8 +455,14 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz)
 			continue;
 		}
 
-		if (data[i] == ' ' || data[i] == '\n' || data[i] == '\r' ||
-		    data[i] == '\t')
+		if ((data[i] == ' ' || data[i] == '\n' || data[i] == '\r' ||
+		     data[i] == '\t') && (
+		       caj->mode == CAJ_MODE_COLON ||
+		       caj->mode == CAJ_MODE_COMMA ||
+		       caj->mode == CAJ_MODE_FIRSTKEY ||
+		       caj->mode == CAJ_MODE_FIRSTVAL ||
+		       caj->mode == CAJ_MODE_KEY ||
+		       caj->mode == CAJ_MODE_VAL))
 		{
 			continue;
 		}
