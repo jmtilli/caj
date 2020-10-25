@@ -15,7 +15,7 @@ $(OBJ) = @sufsuball($(SRC), ".c", ".o")
 $(DEP) = @sufsuball($(SRC), ".c", ".d")
 $(PROG) = @sufsuball($(SRC_PROG), ".c", "")
 
-@phonyrule: 'all': 'main' 'cajun/all'
+@phonyrule: 'all': 'libcaj.a' $(PROG) 'cajun/all'
 
 @patrule: $(PROG): '%': '%.o' 'libcaj.a'
 @	[$(CC), @$(CFLAGS), "-o", $@, $<, 'libcaj.a']

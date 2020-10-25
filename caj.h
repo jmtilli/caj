@@ -77,6 +77,8 @@ struct caj_ctx {
 
 void caj_init(struct caj_ctx *caj, struct caj_handler *handler);
 
+void caj_free(struct caj_ctx *caj);
+
 int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof);
 
 #endif

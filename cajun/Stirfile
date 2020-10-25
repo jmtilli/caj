@@ -2,18 +2,19 @@
 @strict
 
 $(SRC_LIB) = ["cajun.c", "cajrbtree.c"]
-$(SRC_PROG) = []
+$(SRC_PROG) = ["cajuntest.c"]
 
 $(SRC) = [@$(SRC_LIB), @$(SRC_PROG)]
 $(OBJ_LIB) = @sufsuball($(SRC_LIB), ".c", ".o")
 $(OBJ) = @sufsuball($(SRC), ".c", ".o")
 $(DEP) = @sufsuball($(SRC), ".c", ".d")
 $(PROG) = @sufsuball($(SRC_PROG), ".c", "")
+$(LIBS) = ["../libcaj.a"]
 
-@phonyrule: 'all': 'libcajun.a'
+@phonyrule: 'all': 'libcajun.a' $(PROG)
 
-@patrule: $(PROG): '%': '%.o' 'libcajun.a'
-@	[$(CC), @$(CFLAGS), "-o", $@, $<, 'libcajun.a']
+@patrule: $(PROG): '%': '%.o' 'libcajun.a' $(LIBS)
+@	[$(CC), @$(CFLAGS), "-o", $@, $<, 'libcajun.a', @$(LIBS)]
 
 @patrule: $(OBJ): '%.o': '%.c' '%.d'
 @	[$(CC), @$(CFLAGS), "-c", "-o", $@, $<]

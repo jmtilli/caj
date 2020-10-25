@@ -8,6 +8,7 @@
 
 void caj_init(struct caj_ctx *caj, struct caj_handler *handler)
 {
+	memset(caj, 0, sizeof(*caj));
 	caj->mode = CAJ_MODE_VAL;
 	caj->sz = 0;
 	memset(caj->uescape, 0, sizeof(caj->uescape));
@@ -27,6 +28,18 @@ void caj_init(struct caj_ctx *caj, struct caj_handler *handler)
 	caj->valcap = 0;
 	caj->handler = handler;
 	caj->d = 0;
+}
+
+void caj_free(struct caj_ctx *caj)
+{
+	free(caj->key);
+	caj->key = NULL;
+	free(caj->keystack);
+	caj->keystack = NULL;
+	free(caj->val);
+	caj->val = NULL;
+	memset(caj, 0, sizeof(*caj));
+	caj_init(caj, NULL);
 }
 
 static int caj_put_key(struct caj_ctx *caj, char ch)

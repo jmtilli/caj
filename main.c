@@ -97,5 +97,6 @@ int main(int argc, char **argv)
 		}
 	}
 #endif
+	caj_free(&ctx);
 	return 0;
 }
