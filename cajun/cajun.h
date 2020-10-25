@@ -1047,4 +1047,891 @@ static inline unsigned short cajun_dict_get_ushort(struct cajun_node *dict, cons
 	return (unsigned short)n->u.number.d;
 }
 
+// Basic array
+static inline size_t cajun_array_size(struct cajun_node *ar)
+{
+	if (ar->type != CAJUN_ARRAY)
+	{
+		abort();
+	}
+	return ar->u.array.nodesz;
+}
+
+static inline struct cajun_node *cajun_array_get(struct cajun_node *ar, size_t idx)
+{
+	if (ar->type != CAJUN_ARRAY)
+	{
+		abort();
+	}
+	if (idx >= ar->u.array.nodesz)
+	{
+		abort();
+	}
+	return ar->u.array.nodes[idx];
+}
+
+static inline struct cajun_node *cajun_array_get_object(struct cajun_node *ar, size_t idx, enum cajun_null_mode null_mode)
+{
+	struct cajun_node *n = cajun_array_get(ar, idx);
+	if (n == NULL)
+	{
+		if (null_mode == CAJUN_FORBID_BOTH || null_mode == CAJUN_FORBID_MISSING)
+		{
+			abort();
+		}
+		return NULL;
+	}
+	if (n->type == CAJUN_NULL)
+	{
+		if (null_mode == CAJUN_FORBID_BOTH || null_mode == CAJUN_FORBID_NULL)
+		{
+			abort();
+		}
+		return n;
+	}
+	return n;
+}
+
+static inline struct cajun_node *cajun_array_get_not_null(struct cajun_node *ar, size_t idx)
+{
+	struct cajun_node *n = cajun_array_get_object(ar, idx, CAJUN_FORBID_BOTH);
+	return n;
+}
+
+// Array Boolean
+
+static inline int cajun_array_get_boolean_not_null(struct cajun_node *dict, size_t idx)
+{
+	struct cajun_node *n = cajun_array_get_object(dict, idx, CAJUN_FORBID_BOTH);
+	if (n->type != CAJUN_BOOL)
+	{
+		abort();
+	}
+	return n->u.boolean.b;
+}
+
+static inline int cajun_array_is_boolean(struct cajun_node *dict, size_t idx, enum cajun_null_mode null_mode)
+{
+	struct cajun_node *n = cajun_array_get(dict, idx);
+	if (n == NULL)
+	{
+		if (null_mode == CAJUN_FORBID_BOTH || null_mode == CAJUN_FORBID_MISSING)
+		{
+			return 0;
+		}
+		return 1;
+	}
+	if (n->type == CAJUN_NULL)
+	{
+		if (null_mode == CAJUN_FORBID_BOTH || null_mode == CAJUN_FORBID_NULL)
+		{
+			return 0;
+		}
+		return 1;
+	}
+	return n->type == CAJUN_BOOL;
+}
+
+static inline int cajun_array_get_boolean(struct cajun_node *dict, size_t idx, int default_value, enum cajun_null_mode null_mode)
+{
+	struct cajun_node *n = cajun_array_get_object(dict, idx, null_mode);
+	if (n == NULL || n->type == CAJUN_NULL)
+	{
+		return default_value;
+	}
+	if (n->type != CAJUN_BOOL)
+	{
+		abort();
+	}
+	return n->u.boolean.b;
+}
+
+// Array NULL
+
+static inline int cajun_array_is_null(struct cajun_node *dict, size_t idx, enum cajun_null_mode null_mode)
+{
+	struct cajun_node *n = cajun_array_get(dict, idx);
+	if (null_mode == CAJUN_FORBID_BOTH || null_mode == CAJUN_FORBID_NULL)
+	{
+		abort();
+	}
+	if (n == NULL)
+	{
+		if (null_mode == CAJUN_FORBID_MISSING)
+		{
+			return 0;
+		}
+		return 1;
+	}
+	return n->type == CAJUN_NULL;
+}
+
+// Array String
+static inline const char *cajun_array_get_string_not_null(struct cajun_node *dict, size_t idx, size_t *valsz)
+{
+	struct cajun_node *n = cajun_array_get_object(dict, idx, CAJUN_FORBID_BOTH);
+	if (n->type != CAJUN_STRING)
+	{
+		abort();
+	}
+	if (valsz)
+	{
+		*valsz = n->u.string.sz;
+	}
+	return n->u.string.s;
+}
+
+static inline const char *cajun_array_get_string_object(struct cajun_node *dict, size_t idx, size_t *valsz, enum cajun_null_mode null_mode)
+{
+	struct cajun_node *n = cajun_array_get_object(dict, idx, null_mode);
+	if (n == NULL || n->type == CAJUN_NULL)
+	{
+		if (valsz)
+		{
+			*valsz = 0;
+		}
+		return NULL;
+	}
+	if (n->type != CAJUN_STRING)
+	{
+		abort();
+	}
+	if (valsz)
+	{
+		*valsz = n->u.string.sz;
+	}
+	return n->u.string.s;
+}
+
+static inline int cajun_array_is_string(struct cajun_node *dict, size_t idx, enum cajun_null_mode null_mode)
+{
+	struct cajun_node *n = cajun_array_get(dict, idx);
+	if (n == NULL)
+	{
+		if (null_mode == CAJUN_FORBID_BOTH || null_mode == CAJUN_FORBID_MISSING)
+		{
+			return 0;
+		}
+		return 1;
+	}
+	if (n->type == CAJUN_NULL)
+	{
+		if (null_mode == CAJUN_FORBID_BOTH || null_mode == CAJUN_FORBID_NULL)
+		{
+			return 0;
+		}
+		return 1;
+	}
+	return n->type == CAJUN_STRING;
+}
+
+static inline const char *cajun_array_get_string(struct cajun_node *dict, size_t idx, const char *default_value, enum cajun_null_mode null_mode, size_t *valsz)
+{
+	struct cajun_node *n = cajun_array_get_object(dict, idx, null_mode);
+	if (n == NULL || n->type == CAJUN_NULL)
+	{
+		if (valsz)
+		{
+			*valsz = strlen(default_value);
+		}
+		return default_value;
+	}
+	if (n->type != CAJUN_STRING)
+	{
+		abort();
+	}
+	if (valsz)
+	{
+		*valsz = n->u.string.sz;
+	}
+	return n->u.string.s;
+}
+
+static inline const char *cajun_array_get_string_len(struct cajun_node *dict, size_t idx, const char *default_value, size_t default_sz, enum cajun_null_mode null_mode, size_t *valsz)
+{
+	struct cajun_node *n = cajun_array_get_object(dict, idx, null_mode);
+	if (n == NULL || n->type == CAJUN_NULL)
+	{
+		if (valsz)
+		{
+			*valsz = default_sz;
+		}
+		return default_value;
+	}
+	if (n->type != CAJUN_STRING)
+	{
+		abort();
+	}
+	if (valsz)
+	{
+		*valsz = n->u.string.sz;
+	}
+	return n->u.string.s;
+}
+
+// Array Array
+static inline struct cajun_node *cajun_array_get_array_not_null(struct cajun_node *dict, size_t idx)
+{
+	struct cajun_node *n = cajun_array_get_object(dict, idx, CAJUN_FORBID_BOTH);
+	if (n->type != CAJUN_ARRAY)
+	{
+		abort();
+	}
+	return n;
+}
+
+static inline struct cajun_node *cajun_array_get_array_object(struct cajun_node *dict, size_t idx, enum cajun_null_mode null_mode)
+{
+	struct cajun_node *n = cajun_array_get_object(dict, idx, null_mode);
+	if (n == NULL || n->type == CAJUN_NULL)
+	{
+		return NULL;
+	}
+	if (n->type != CAJUN_ARRAY)
+	{
+		abort();
+	}
+	return n;
+}
+
+static inline int cajun_array_is_array(struct cajun_node *dict, size_t idx, enum cajun_null_mode null_mode)
+{
+	struct cajun_node *n = cajun_array_get(dict, idx);
+	if (n == NULL)
+	{
+		if (null_mode == CAJUN_FORBID_BOTH || null_mode == CAJUN_FORBID_MISSING)
+		{
+			return 0;
+		}
+		return 1;
+	}
+	if (n->type == CAJUN_NULL)
+	{
+		if (null_mode == CAJUN_FORBID_BOTH || null_mode == CAJUN_FORBID_NULL)
+		{
+			return 0;
+		}
+		return 1;
+	}
+	return n->type == CAJUN_ARRAY;
+}
+
+// Array Dict
+static inline struct cajun_node *cajun_array_get_dict_not_null(struct cajun_node *dict, size_t idx)
+{
+	struct cajun_node *n = cajun_array_get_object(dict, idx, CAJUN_FORBID_BOTH);
+	if (n->type != CAJUN_DICT)
+	{
+		abort();
+	}
+	return n;
+}
+
+static inline struct cajun_node *cajun_array_get_dict_object(struct cajun_node *dict, size_t idx, enum cajun_null_mode null_mode)
+{
+	struct cajun_node *n = cajun_array_get_object(dict, idx, null_mode);
+	if (n == NULL || n->type == CAJUN_NULL)
+	{
+		return NULL;
+	}
+	if (n->type != CAJUN_DICT)
+	{
+		abort();
+	}
+	return n;
+}
+
+static inline int cajun_array_is_dict(struct cajun_node *dict, size_t idx, enum cajun_null_mode null_mode)
+{
+	struct cajun_node *n = cajun_array_get(dict, idx);
+	if (n == NULL)
+	{
+		if (null_mode == CAJUN_FORBID_BOTH || null_mode == CAJUN_FORBID_MISSING)
+		{
+			return 0;
+		}
+		return 1;
+	}
+	if (n->type == CAJUN_NULL)
+	{
+		if (null_mode == CAJUN_FORBID_BOTH || null_mode == CAJUN_FORBID_NULL)
+		{
+			return 0;
+		}
+		return 1;
+	}
+	return n->type == CAJUN_DICT;
+}
+
+// Array Basic number object
+static inline struct cajun_node *cajun_array_get_number_not_null(struct cajun_node *dict, size_t idx)
+{
+	struct cajun_node *n = cajun_array_get_object(dict, idx, CAJUN_FORBID_BOTH);
+	if (n->type != CAJUN_NUMBER)
+	{
+		abort();
+	}
+	return n;
+}
+
+static inline struct cajun_node *cajun_array_get_number_object(struct cajun_node *dict, size_t idx, enum cajun_null_mode null_mode)
+{
+	struct cajun_node *n = cajun_array_get_object(dict, idx, null_mode);
+	if (n == NULL || n->type == CAJUN_NULL)
+	{
+		return NULL;
+	}
+	if (n->type != CAJUN_NUMBER)
+	{
+		abort();
+	}
+	return n;
+}
+
+static inline int cajun_array_is_number(struct cajun_node *dict, size_t idx, enum cajun_null_mode null_mode)
+{
+	struct cajun_node *n = cajun_array_get(dict, idx);
+	if (n == NULL)
+	{
+		if (null_mode == CAJUN_FORBID_BOTH || null_mode == CAJUN_FORBID_MISSING)
+		{
+			return 0;
+		}
+		return 1;
+	}
+	if (n->type == CAJUN_NULL)
+	{
+		if (null_mode == CAJUN_FORBID_BOTH || null_mode == CAJUN_FORBID_NULL)
+		{
+			return 0;
+		}
+		return 1;
+	}
+	return n->type == CAJUN_NUMBER;
+}
+
+// Array Double
+static inline double cajun_array_get_double_not_null(struct cajun_node *dict, size_t idx)
+{
+	struct cajun_node *n = cajun_array_get_number_object(dict, idx, CAJUN_FORBID_BOTH);
+	return n->u.number.d;
+}
+
+static inline int cajun_array_is_double(struct cajun_node *dict, size_t idx, enum cajun_null_mode null_mode)
+{
+	return cajun_array_is_number(dict, idx, null_mode);
+}
+
+static inline double cajun_array_get_double(struct cajun_node *dict, size_t idx, double default_value, enum cajun_null_mode null_mode)
+{
+	struct cajun_node *n = cajun_array_get_number_object(dict, idx, null_mode);
+	if (n == NULL)
+	{
+		return default_value;
+	}
+	return n->u.number.d;
+}
+
+// Array Float
+static inline float cajun_array_get_float_not_null(struct cajun_node *dict, size_t idx)
+{
+	struct cajun_node *n = cajun_array_get_number_object(dict, idx, CAJUN_FORBID_BOTH);
+	return (float)n->u.number.d;
+}
+
+static inline int cajun_array_is_float(struct cajun_node *dict, size_t idx, enum cajun_null_mode null_mode)
+{
+	return cajun_array_is_number(dict, idx, null_mode);
+}
+
+static inline float cajun_array_get_float(struct cajun_node *dict, size_t idx, float default_value, enum cajun_null_mode null_mode)
+{
+	struct cajun_node *n = cajun_array_get_number_object(dict, idx, null_mode);
+	if (n == NULL)
+	{
+		return default_value;
+	}
+	return (float)n->u.number.d;
+}
+
+// Array uint8
+static inline uint8_t cajun_array_get_uint8_not_null(struct cajun_node *dict, size_t idx)
+{
+	struct cajun_node *n = cajun_array_get_number_object(dict, idx, CAJUN_FORBID_BOTH);
+	if ((double)(uint8_t)n->u.number.d != n->u.number.d)
+	{
+		abort();
+	}
+	return (uint8_t)n->u.number.d;
+}
+
+static inline int cajun_array_is_uint8(struct cajun_node *dict, size_t idx, enum cajun_null_mode null_mode)
+{
+	 struct cajun_node *n;
+	 if (!cajun_array_is_number(dict, idx, null_mode))
+	 {
+		 return 0;
+	 }
+	 n = cajun_array_get_number_object(dict, idx, null_mode);
+	 if (n == NULL || n->type == CAJUN_NULL)
+	 {
+		 return 1;
+	 }
+	 return (double)(uint8_t)n->u.number.d == n->u.number.d;
+}
+
+static inline uint8_t cajun_array_get_uint8(struct cajun_node *dict, size_t idx, uint8_t default_value, enum cajun_null_mode null_mode)
+{
+	struct cajun_node *n = cajun_array_get_number_object(dict, idx, null_mode);
+	if (n == NULL)
+	{
+		return default_value;
+	}
+	if ((double)(uint8_t)n->u.number.d != n->u.number.d)
+	{
+		abort();
+	}
+	return (uint8_t)n->u.number.d;
+}
+
+// Array uint16
+static inline uint16_t cajun_array_get_uint16_not_null(struct cajun_node *dict, size_t idx)
+{
+	struct cajun_node *n = cajun_array_get_number_object(dict, idx, CAJUN_FORBID_BOTH);
+	if ((double)(uint16_t)n->u.number.d != n->u.number.d)
+	{
+		abort();
+	}
+	return (uint16_t)n->u.number.d;
+}
+
+static inline int cajun_array_is_uint16(struct cajun_node *dict, size_t idx, enum cajun_null_mode null_mode)
+{
+	 struct cajun_node *n;
+	 if (!cajun_array_is_number(dict, idx, null_mode))
+	 {
+		 return 0;
+	 }
+	 n = cajun_array_get_number_object(dict, idx, null_mode);
+	 if (n == NULL || n->type == CAJUN_NULL)
+	 {
+		 return 1;
+	 }
+	 return (double)(uint16_t)n->u.number.d == n->u.number.d;
+}
+
+static inline uint16_t cajun_array_get_uint16(struct cajun_node *dict, size_t idx, uint16_t default_value, enum cajun_null_mode null_mode)
+{
+	struct cajun_node *n = cajun_array_get_number_object(dict, idx, null_mode);
+	if (n == NULL)
+	{
+		return default_value;
+	}
+	if ((double)(uint16_t)n->u.number.d != n->u.number.d)
+	{
+		abort();
+	}
+	return (uint16_t)n->u.number.d;
+}
+
+// Array uint32
+static inline uint32_t cajun_array_get_uint32_not_null(struct cajun_node *dict, size_t idx)
+{
+	struct cajun_node *n = cajun_array_get_number_object(dict, idx, CAJUN_FORBID_BOTH);
+	if ((double)(uint32_t)n->u.number.d != n->u.number.d)
+	{
+		abort();
+	}
+	return (uint32_t)n->u.number.d;
+}
+
+static inline int cajun_array_is_uint32(struct cajun_node *dict, size_t idx, enum cajun_null_mode null_mode)
+{
+	 struct cajun_node *n;
+	 if (!cajun_array_is_number(dict, idx, null_mode))
+	 {
+		 return 0;
+	 }
+	 n = cajun_array_get_number_object(dict, idx, null_mode);
+	 if (n == NULL || n->type == CAJUN_NULL)
+	 {
+		 return 1;
+	 }
+	 return (double)(uint32_t)n->u.number.d == n->u.number.d;
+}
+
+static inline uint32_t cajun_array_get_uint32(struct cajun_node *dict, size_t idx, uint32_t default_value, enum cajun_null_mode null_mode)
+{
+	struct cajun_node *n = cajun_array_get_number_object(dict, idx, null_mode);
+	if (n == NULL)
+	{
+		return default_value;
+	}
+	if ((double)(uint32_t)n->u.number.d != n->u.number.d)
+	{
+		abort();
+	}
+	return (uint32_t)n->u.number.d;
+}
+
+// Array uint64
+static inline uint64_t cajun_array_get_uint64_not_null(struct cajun_node *dict, size_t idx)
+{
+	struct cajun_node *n = cajun_array_get_number_object(dict, idx, CAJUN_FORBID_BOTH);
+	if ((double)(uint64_t)n->u.number.d != n->u.number.d)
+	{
+		abort();
+	}
+	return (uint64_t)n->u.number.d;
+}
+
+static inline int cajun_array_is_uint64(struct cajun_node *dict, size_t idx, enum cajun_null_mode null_mode)
+{
+	 struct cajun_node *n;
+	 if (!cajun_array_is_number(dict, idx, null_mode))
+	 {
+		 return 0;
+	 }
+	 n = cajun_array_get_number_object(dict, idx, null_mode);
+	 if (n == NULL || n->type == CAJUN_NULL)
+	 {
+		 return 1;
+	 }
+	 return (double)(uint64_t)n->u.number.d == n->u.number.d;
+}
+
+static inline uint64_t cajun_array_get_uint64(struct cajun_node *dict, size_t idx, uint64_t default_value, enum cajun_null_mode null_mode)
+{
+	struct cajun_node *n = cajun_array_get_number_object(dict, idx, null_mode);
+	if (n == NULL)
+	{
+		return default_value;
+	}
+	if ((double)(uint64_t)n->u.number.d != n->u.number.d)
+	{
+		abort();
+	}
+	return (uint64_t)n->u.number.d;
+}
+
+// Array int8
+static inline int8_t cajun_array_get_int8_not_null(struct cajun_node *dict, size_t idx)
+{
+	struct cajun_node *n = cajun_array_get_number_object(dict, idx, CAJUN_FORBID_BOTH);
+	if ((double)(int8_t)n->u.number.d != n->u.number.d)
+	{
+		abort();
+	}
+	return (int8_t)n->u.number.d;
+}
+
+static inline int cajun_array_is_int8(struct cajun_node *dict, size_t idx, enum cajun_null_mode null_mode)
+{
+	 struct cajun_node *n;
+	 if (!cajun_array_is_number(dict, idx, null_mode))
+	 {
+		 return 0;
+	 }
+	 n = cajun_array_get_number_object(dict, idx, null_mode);
+	 if (n == NULL || n->type == CAJUN_NULL)
+	 {
+		 return 1;
+	 }
+	 return (double)(int8_t)n->u.number.d == n->u.number.d;
+}
+
+static inline int8_t cajun_array_get_int8(struct cajun_node *dict, size_t idx, int8_t default_value, enum cajun_null_mode null_mode)
+{
+	struct cajun_node *n = cajun_array_get_number_object(dict, idx, null_mode);
+	if (n == NULL)
+	{
+		return default_value;
+	}
+	if ((double)(int8_t)n->u.number.d != n->u.number.d)
+	{
+		abort();
+	}
+	return (int8_t)n->u.number.d;
+}
+
+// Array int16
+static inline int16_t cajun_array_get_int16_not_null(struct cajun_node *dict, size_t idx)
+{
+	struct cajun_node *n = cajun_array_get_number_object(dict, idx, CAJUN_FORBID_BOTH);
+	if ((double)(int16_t)n->u.number.d != n->u.number.d)
+	{
+		abort();
+	}
+	return (int16_t)n->u.number.d;
+}
+
+static inline int cajun_array_is_int16(struct cajun_node *dict, size_t idx, enum cajun_null_mode null_mode)
+{
+	 struct cajun_node *n;
+	 if (!cajun_array_is_number(dict, idx, null_mode))
+	 {
+		 return 0;
+	 }
+	 n = cajun_array_get_number_object(dict, idx, null_mode);
+	 if (n == NULL || n->type == CAJUN_NULL)
+	 {
+		 return 1;
+	 }
+	 return (double)(int16_t)n->u.number.d == n->u.number.d;
+}
+
+static inline int16_t cajun_array_get_int16(struct cajun_node *dict, size_t idx, int16_t default_value, enum cajun_null_mode null_mode)
+{
+	struct cajun_node *n = cajun_array_get_number_object(dict, idx, null_mode);
+	if (n == NULL)
+	{
+		return default_value;
+	}
+	if ((double)(int16_t)n->u.number.d != n->u.number.d)
+	{
+		abort();
+	}
+	return (int16_t)n->u.number.d;
+}
+
+// Array int32
+static inline int32_t cajun_array_get_int32_not_null(struct cajun_node *dict, size_t idx)
+{
+	struct cajun_node *n = cajun_array_get_number_object(dict, idx, CAJUN_FORBID_BOTH);
+	if ((double)(int32_t)n->u.number.d != n->u.number.d)
+	{
+		abort();
+	}
+	return (int32_t)n->u.number.d;
+}
+
+static inline int cajun_array_is_int32(struct cajun_node *dict, size_t idx, enum cajun_null_mode null_mode)
+{
+	 struct cajun_node *n;
+	 if (!cajun_array_is_number(dict, idx, null_mode))
+	 {
+		 return 0;
+	 }
+	 n = cajun_array_get_number_object(dict, idx, null_mode);
+	 if (n == NULL || n->type == CAJUN_NULL)
+	 {
+		 return 1;
+	 }
+	 return (double)(int32_t)n->u.number.d == n->u.number.d;
+}
+
+static inline int32_t cajun_array_get_int32(struct cajun_node *dict, size_t idx, int32_t default_value, enum cajun_null_mode null_mode)
+{
+	struct cajun_node *n = cajun_array_get_number_object(dict, idx, null_mode);
+	if (n == NULL)
+	{
+		return default_value;
+	}
+	if ((double)(int32_t)n->u.number.d != n->u.number.d)
+	{
+		abort();
+	}
+	return (int32_t)n->u.number.d;
+}
+
+// Array int64
+static inline int64_t cajun_array_get_int64_not_null(struct cajun_node *dict, size_t idx)
+{
+	struct cajun_node *n = cajun_array_get_number_object(dict, idx, CAJUN_FORBID_BOTH);
+	if ((double)(int64_t)n->u.number.d != n->u.number.d)
+	{
+		abort();
+	}
+	return (int64_t)n->u.number.d;
+}
+
+static inline int cajun_array_is_int64(struct cajun_node *dict, size_t idx, enum cajun_null_mode null_mode)
+{
+	 struct cajun_node *n;
+	 if (!cajun_array_is_number(dict, idx, null_mode))
+	 {
+		 return 0;
+	 }
+	 n = cajun_array_get_number_object(dict, idx, null_mode);
+	 if (n == NULL || n->type == CAJUN_NULL)
+	 {
+		 return 1;
+	 }
+	 return (double)(int64_t)n->u.number.d == n->u.number.d;
+}
+
+static inline int64_t cajun_array_get_int64(struct cajun_node *dict, size_t idx, int64_t default_value, enum cajun_null_mode null_mode)
+{
+	struct cajun_node *n = cajun_array_get_number_object(dict, idx, null_mode);
+	if (n == NULL)
+	{
+		return default_value;
+	}
+	if ((double)(int64_t)n->u.number.d != n->u.number.d)
+	{
+		abort();
+	}
+	return (int64_t)n->u.number.d;
+}
+
+// Array int
+static inline int cajun_array_get_int_not_null(struct cajun_node *dict, size_t idx)
+{
+	struct cajun_node *n = cajun_array_get_number_object(dict, idx, CAJUN_FORBID_BOTH);
+	if ((double)(int)n->u.number.d != n->u.number.d)
+	{
+		abort();
+	}
+	return (int)n->u.number.d;
+}
+
+static inline int cajun_array_is_int(struct cajun_node *dict, size_t idx, enum cajun_null_mode null_mode)
+{
+	 struct cajun_node *n;
+	 if (!cajun_array_is_number(dict, idx, null_mode))
+	 {
+		 return 0;
+	 }
+	 n = cajun_array_get_number_object(dict, idx, null_mode);
+	 if (n == NULL || n->type == CAJUN_NULL)
+	 {
+		 return 1;
+	 }
+	 return (double)(int)n->u.number.d == n->u.number.d;
+}
+
+static inline int cajun_array_get_int(struct cajun_node *dict, size_t idx, int default_value, enum cajun_null_mode null_mode)
+{
+	struct cajun_node *n = cajun_array_get_number_object(dict, idx, null_mode);
+	if (n == NULL)
+	{
+		return default_value;
+	}
+	if ((double)(int)n->u.number.d != n->u.number.d)
+	{
+		abort();
+	}
+	return (int)n->u.number.d;
+}
+
+// Array unsigned
+static inline unsigned cajun_array_get_unsigned_not_null(struct cajun_node *dict, size_t idx)
+{
+	struct cajun_node *n = cajun_array_get_number_object(dict, idx, CAJUN_FORBID_BOTH);
+	if ((double)(unsigned)n->u.number.d != n->u.number.d)
+	{
+		abort();
+	}
+	return (unsigned)n->u.number.d;
+}
+
+static inline int cajun_array_is_unsigned(struct cajun_node *dict, size_t idx, enum cajun_null_mode null_mode)
+{
+	 struct cajun_node *n;
+	 if (!cajun_array_is_number(dict, idx, null_mode))
+	 {
+		 return 0;
+	 }
+	 n = cajun_array_get_number_object(dict, idx, null_mode);
+	 if (n == NULL || n->type == CAJUN_NULL)
+	 {
+		 return 1;
+	 }
+	 return (double)(unsigned)n->u.number.d == n->u.number.d;
+}
+
+static inline unsigned cajun_array_get_unsigned(struct cajun_node *dict, size_t idx, unsigned default_value, enum cajun_null_mode null_mode)
+{
+	struct cajun_node *n = cajun_array_get_number_object(dict, idx, null_mode);
+	if (n == NULL)
+	{
+		return default_value;
+	}
+	if ((double)(unsigned)n->u.number.d != n->u.number.d)
+	{
+		abort();
+	}
+	return (unsigned)n->u.number.d;
+}
+
+// Array short
+static inline short cajun_array_get_short_not_null(struct cajun_node *dict, size_t idx)
+{
+	struct cajun_node *n = cajun_array_get_number_object(dict, idx, CAJUN_FORBID_BOTH);
+	if ((double)(short)n->u.number.d != n->u.number.d)
+	{
+		abort();
+	}
+	return (short)n->u.number.d;
+}
+
+static inline short cajun_array_is_short(struct cajun_node *dict, size_t idx, enum cajun_null_mode null_mode)
+{
+	 struct cajun_node *n;
+	 if (!cajun_array_is_number(dict, idx, null_mode))
+	 {
+		 return 0;
+	 }
+	 n = cajun_array_get_number_object(dict, idx, null_mode);
+	 if (n == NULL || n->type == CAJUN_NULL)
+	 {
+		 return 1;
+	 }
+	 return (double)(short)n->u.number.d == n->u.number.d;
+}
+
+static inline short cajun_array_get_short(struct cajun_node *dict, size_t idx, short default_value, enum cajun_null_mode null_mode)
+{
+	struct cajun_node *n = cajun_array_get_number_object(dict, idx, null_mode);
+	if (n == NULL)
+	{
+		return default_value;
+	}
+	if ((double)(short)n->u.number.d != n->u.number.d)
+	{
+		abort();
+	}
+	return (short)n->u.number.d;
+}
+
+// Array ushort
+static inline unsigned short cajun_array_get_ushort_not_null(struct cajun_node *dict, size_t idx)
+{
+	struct cajun_node *n = cajun_array_get_number_object(dict, idx, CAJUN_FORBID_BOTH);
+	if ((double)(unsigned short)n->u.number.d != n->u.number.d)
+	{
+		abort();
+	}
+	return (unsigned short)n->u.number.d;
+}
+
+static inline int cajun_array_is_ushort(struct cajun_node *dict, size_t idx, enum cajun_null_mode null_mode)
+{
+	 struct cajun_node *n;
+	 if (!cajun_array_is_number(dict, idx, null_mode))
+	 {
+		 return 0;
+	 }
+	 n = cajun_array_get_number_object(dict, idx, null_mode);
+	 if (n == NULL || n->type == CAJUN_NULL)
+	 {
+		 return 1;
+	 }
+	 return (double)(unsigned short)n->u.number.d == n->u.number.d;
+}
+
+static inline unsigned short cajun_array_get_ushort(struct cajun_node *dict, size_t idx, unsigned short default_value, enum cajun_null_mode null_mode)
+{
+	struct cajun_node *n = cajun_array_get_number_object(dict, idx, null_mode);
+	if (n == NULL)
+	{
+		return default_value;
+	}
+	if ((double)(unsigned short)n->u.number.d != n->u.number.d)
+	{
+		abort();
+	}
+	return (unsigned short)n->u.number.d;
+}
+
 #endif
