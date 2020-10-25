@@ -72,6 +72,11 @@ license:
 
 Copyright (C) 2020 Juha-Matti Tilli
 
+Copyright (c) 2017-2019 Aalto University
+
+Authors:
+- Juha-Matti Tilli (copyright transfer to Aalto on 19.4.2018 for some code)
+
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in
 the Software without restriction, including without limitation the rights to
