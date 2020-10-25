@@ -54,6 +54,18 @@ static inline void cajun_node_init(struct cajun_node *n)
 	n->type = CAJUN_NULL;
 }
 
+static inline struct cajun_node *cajun_node_new(void)
+{
+	struct cajun_node *result;
+	result = malloc(sizeof(*result));
+	if (result == NULL)
+	{
+		return NULL;
+	}
+	cajun_node_init(result);
+	return result;
+}
+
 static inline void cajun_null_init(struct cajun_node *n)
 {
 	cajun_node_init(n);

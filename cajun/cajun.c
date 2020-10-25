@@ -131,3 +131,55 @@ int cajun_array_add(struct cajun_node *parent, struct cajun_node *child)
 	parent->u.array.nodes[parent->u.array.nodesz++] = child;
 	return 0;
 }
+
+static inline void cajun_node_free(struct cajun_node *n)
+{
+	size_t i;
+	struct caj_linked_list_node *iter, *tmp;
+	if (n->key != NULL || n->keysz != 0)
+	{
+		abort();
+	}
+	free(n->key);
+	n->key = NULL;
+	n->keysz = 0;
+	switch (n->type) {
+		case CAJUN_NULL:
+		case CAJUN_BOOL:
+		case CAJUN_NUMBER:
+			break;
+		case CAJUN_STRING:
+			free(n->u.string.s);
+			n->u.string.s = NULL;
+			n->u.string.sz = 0;
+			break;
+		case CAJUN_ARRAY:
+			for (i = 0; i < n->u.array.nodesz; i++)
+			{
+				cajun_node_free(n->u.array.nodes[i]);
+				free(n->u.array.nodes[i]);
+				n->u.array.nodes[i] = NULL;
+			}
+			free(n->u.array.nodes);
+			n->u.array.nodes = NULL;
+			n->u.array.nodesz = 0;
+			n->u.array.nodecap = 0;
+			break;
+		case CAJUN_DICT:
+			CAJ_LINKED_LIST_FOR_EACH_SAFE(iter, tmp, &n->u.dict.llhead)
+			{
+				struct cajun_node *n2;
+				n2 = CAJ_CONTAINER_OF(iter, struct cajun_node, llnode);
+				free(n2->key);
+				n2->key = NULL;
+				n2->keysz = 0;
+				cajun_node_free(n2);
+				free(n2);
+			}
+			break;
+		default:
+			abort();
+	}
+	memset(n, 0, sizeof(*n));
+	n->type = CAJUN_NULL;
+}
