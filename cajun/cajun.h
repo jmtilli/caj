@@ -28,7 +28,7 @@ struct cajun_node {
 			struct caj_linked_list_head llhead;
 		} dict;
 		struct {
-			struct cajun_node *nodes;
+			struct cajun_node **nodes;
 			size_t nodesz;
 			size_t nodecap;
 		} array;
@@ -134,5 +134,7 @@ int cajun_node_cmp(struct caj_rb_tree_node *a, struct caj_rb_tree_node *b, void 
 struct cajun_node *cajun_dict_get(struct cajun_node *n, const char *key, size_t keysz);
 
 int cajun_dict_add(struct cajun_node *parent, const char *key, size_t keysz, struct cajun_node *child);
+
+int cajun_array_add(struct cajun_node *parent, struct cajun_node *child);
 
 #endif

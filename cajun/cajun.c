@@ -109,3 +109,25 @@ int cajun_dict_add(struct cajun_node *parent, const char *key, size_t keysz, str
 	caj_linked_list_add_tail(&child->llnode, &parent->u.dict.llhead);
 	return 0;
 }
+
+int cajun_array_add(struct cajun_node *parent, struct cajun_node *child)
+{
+	if (parent->type != CAJUN_ARRAY || child->key != NULL || child->keysz != 0)
+	{
+		abort();
+	}
+	if (parent->u.array.nodesz >= parent->u.array.nodecap)
+	{
+		size_t newcap = 2*parent->u.array.nodesz + 16;
+		struct cajun_node **newnodes;
+		newnodes = realloc(parent->u.array.nodes, newcap * sizeof(*newnodes));
+		if (newnodes == NULL)
+		{
+			return -ENOMEM;
+		}
+		parent->u.array.nodes = newnodes;
+		parent->u.array.nodecap = newcap;
+	}
+	parent->u.array.nodes[parent->u.array.nodesz++] = child;
+	return 0;
+}
