@@ -256,7 +256,7 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 				}
 				caj->valsz--;
 				caj->mode = CAJ_MODE_COMMA;
-				if (caj->handler->handle_string == NULL)
+				if (caj->handler->vtable->handle_string == NULL)
 				{
 					if (caj->keystacksz <= 0)
 					{
@@ -264,7 +264,7 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 					}
 					continue;
 				}
-				ret = caj->handler->handle_string(
+				ret = caj->handler->vtable->handle_string(
 					caj->handler,
 					caj_get_key(caj), caj_get_keysz(caj),
 					caj->val, caj->valsz);
@@ -511,7 +511,7 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 					return -ENOMEM;
 				}
 
-				if (caj->handler->end_dict == NULL)
+				if (caj->handler->vtable->end_dict == NULL)
 				{
 					if (caj->keystacksz <= 0)
 					{
@@ -519,7 +519,7 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 					}
 					continue;
 				}
-				ret = caj->handler->end_dict(
+				ret = caj->handler->vtable->end_dict(
 					caj->handler,
 					caj_get_key(caj), caj_get_keysz(caj));
 				if (ret != 0)
@@ -552,7 +552,7 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 					return -ENOMEM;
 				}
 
-				if (caj->handler->end_array == NULL)
+				if (caj->handler->vtable->end_array == NULL)
 				{
 					if (caj->keystacksz <= 0)
 					{
@@ -560,7 +560,7 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 					}
 					continue;
 				}
-				ret = caj->handler->end_array(
+				ret = caj->handler->vtable->end_array(
 					caj->handler,
 					caj_get_key(caj), caj_get_keysz(caj));
 				if (ret != 0)
@@ -582,12 +582,12 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 			}
 			caj->mode = CAJ_MODE_FIRSTKEY;
 
-			if (caj->handler->start_dict == NULL)
+			if (caj->handler->vtable->start_dict == NULL)
 			{
 				caj_put_keystack_2(caj);
 				continue;
 			}
-			ret = caj->handler->start_dict(
+			ret = caj->handler->vtable->start_dict(
 				caj->handler,
 				caj_get_key(caj), caj_get_keysz(caj));
 			caj_put_keystack_2(caj);
@@ -605,12 +605,12 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 			}
 			caj->mode = CAJ_MODE_FIRSTVAL;
 
-			if (caj->handler->start_array == NULL)
+			if (caj->handler->vtable->start_array == NULL)
 			{
 				caj_put_keystack_2(caj);
 				continue;
 			}
-			ret = caj->handler->start_array(
+			ret = caj->handler->vtable->start_array(
 				caj->handler,
 				caj_get_key(caj), caj_get_keysz(caj));
 			caj_put_keystack_2(caj);
@@ -632,7 +632,7 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 				continue;
 			}
 			caj->mode = CAJ_MODE_COMMA;
-			if (caj->handler->handle_boolean == NULL)
+			if (caj->handler->vtable->handle_boolean == NULL)
 			{
 				if (caj->keystacksz <= 0)
 				{
@@ -640,7 +640,7 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 				}
 				continue;
 			}
-			ret = caj->handler->handle_boolean(
+			ret = caj->handler->vtable->handle_boolean(
 				caj->handler,
 				caj_get_key(caj), caj_get_keysz(caj),
 				1);
@@ -665,7 +665,7 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 				continue;
 			}
 			caj->mode = CAJ_MODE_COMMA;
-			if (caj->handler->handle_boolean == NULL)
+			if (caj->handler->vtable->handle_boolean == NULL)
 			{
 				if (caj->keystacksz <= 0)
 				{
@@ -673,7 +673,7 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 				}
 				continue;
 			}
-			ret = caj->handler->handle_boolean(
+			ret = caj->handler->vtable->handle_boolean(
 				caj->handler,
 				caj_get_key(caj), caj_get_keysz(caj),
 				0);
@@ -698,7 +698,7 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 				continue;
 			}
 			caj->mode = CAJ_MODE_COMMA;
-			if (caj->handler->handle_null == NULL)
+			if (caj->handler->vtable->handle_null == NULL)
 			{
 				if (caj->keystacksz <= 0)
 				{
@@ -706,7 +706,7 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 				}
 				continue;
 			}
-			ret = caj->handler->handle_null(
+			ret = caj->handler->vtable->handle_null(
 				caj->handler,
 				caj_get_key(caj), caj_get_keysz(caj));
 			if (ret != 0)
@@ -806,7 +806,7 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 			}
 			caj->mode = CAJ_MODE_COMMA;
 			i--;
-			if (caj->handler->handle_number == NULL)
+			if (caj->handler->vtable->handle_number == NULL)
 			{
 				if (caj->keystacksz <= 0)
 				{
@@ -814,7 +814,7 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 				}
 				continue;
 			}
-			ret = caj->handler->handle_number(
+			ret = caj->handler->vtable->handle_number(
 				caj->handler,
 				caj_get_key(caj), caj_get_keysz(caj),
 				caj_get_number(caj));
@@ -849,7 +849,7 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 			}
 			caj->mode = CAJ_MODE_COMMA;
 			i--;
-			if (caj->handler->handle_number == NULL)
+			if (caj->handler->vtable->handle_number == NULL)
 			{
 				if (caj->keystacksz <= 0)
 				{
@@ -857,7 +857,7 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 				}
 				continue;
 			}
-			ret = caj->handler->handle_number(
+			ret = caj->handler->vtable->handle_number(
 				caj->handler,
 				caj_get_key(caj), caj_get_keysz(caj),
 				caj_get_number(caj));
@@ -909,7 +909,7 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 			}
 			caj->mode = CAJ_MODE_COMMA;
 			i--;
-			if (caj->handler->handle_number == NULL)
+			if (caj->handler->vtable->handle_number == NULL)
 			{
 				if (caj->keystacksz <= 0)
 				{
@@ -917,7 +917,7 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 				}
 				continue;
 			}
-			ret = caj->handler->handle_number(
+			ret = caj->handler->vtable->handle_number(
 				caj->handler,
 				caj_get_key(caj), caj_get_keysz(caj),
 				caj_get_number(caj));
@@ -937,7 +937,7 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 	     caj->mode == CAJ_MODE_MANTISSA_FRAC) && eof)
 	{
 		caj->mode = CAJ_MODE_COMMA;
-		if (caj->handler->handle_number == NULL)
+		if (caj->handler->vtable->handle_number == NULL)
 		{
 			if (caj->keystacksz <= 0)
 			{
@@ -945,7 +945,7 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 			}
 			return -EINPROGRESS;
 		}
-		ret = caj->handler->handle_number(
+		ret = caj->handler->vtable->handle_number(
 			caj->handler,
 			caj_get_key(caj), caj_get_keysz(caj),
 			caj_get_number(caj));

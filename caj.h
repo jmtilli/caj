@@ -3,7 +3,9 @@
 
 #include <stddef.h>
 
-struct caj_handler {
+struct caj_handler;
+
+struct caj_handler_vtable {
 	int (*start_dict)(struct caj_handler *cajh, const char *key, size_t keysz);
 	int (*end_dict)(struct caj_handler *cajh, const char *key, size_t keysz);
 	int (*start_array)(struct caj_handler *cajh, const char *key, size_t keysz);
@@ -12,6 +14,10 @@ struct caj_handler {
 	int (*handle_string)(struct caj_handler *cajh, const char *key, size_t keysz, const char *val, size_t valsz);
 	int (*handle_number)(struct caj_handler *cajh, const char *key, size_t keysz, double d);
 	int (*handle_boolean)(struct caj_handler *cajh, const char *key, size_t keysz, int b);
+};
+
+struct caj_handler {
+	const struct caj_handler_vtable *vtable;
 	void *userdata;
 };
 

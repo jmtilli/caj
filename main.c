@@ -58,7 +58,7 @@ static int my_handle_boolean(struct caj_handler *cajh, const char *key, size_t k
 	return 0;
 }
 
-struct caj_handler myhandler = {
+struct caj_handler_vtable myhandler_vtable = {
 	.start_dict = my_start_dict,
 	.end_dict = my_end_dict,
 	.start_array = my_start_array,
@@ -67,6 +67,10 @@ struct caj_handler myhandler = {
 	.handle_string = my_handle_string,
 	.handle_number = my_handle_number,
 	.handle_boolean = my_handle_boolean,
+};
+
+struct caj_handler myhandler = {
+	.vtable = &myhandler_vtable,
 	.userdata = NULL,
 };
 
