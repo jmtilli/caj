@@ -6,6 +6,7 @@
 #include "cajmurmur.h"
 #include "cajcontainerof.h"
 #include <stdint.h>
+#include <stdlib.h>
 
 enum cajun_type {
 	CAJUN_DICT,
@@ -20,6 +21,7 @@ struct cajun_node {
 	size_t keysz;
 	enum cajun_type type;
 	struct caj_rb_tree_node node;
+	struct caj_linked_list_node llnode;
 	union {
 		struct {
 			struct caj_rb_tree_nocmp heads[8];
@@ -43,6 +45,73 @@ struct cajun_node {
 	} u;
 };
 
+static inline void cajun_node_init(struct cajun_node *n)
+{
+	memset(n, 0, sizeof(*n));
+	n->key = NULL;
+	n->keysz = 0;
+	caj_linked_list_node_init(&n->llnode);
+	n->type = CAJUN_NULL;
+}
+
+static inline void cajun_null_init(struct cajun_node *n)
+{
+	cajun_node_init(n);
+	n->type = CAJUN_NULL;
+}
+
+static inline int cajun_string_init(struct cajun_node *n, const char *val, size_t valsz)
+{
+	char *val2;
+	cajun_node_init(n);
+	val2 = malloc(valsz + 1);
+	if (val2 == NULL)
+	{
+		return -ENOMEM;
+	}
+	memcpy(val2, val, valsz);
+	val2[valsz] = '\0';
+	n->type = CAJUN_STRING;
+	n->u.string.s = val2;
+	n->u.string.sz = valsz;
+	return 0;
+}
+
+static inline void cajun_array_init(struct cajun_node *n)
+{
+	cajun_node_init(n);
+	n->type = CAJUN_ARRAY;
+	n->u.array.nodes = NULL;
+	n->u.array.nodesz = 0;
+	n->u.array.nodecap = 0;
+}
+
+static inline void cajun_number_init(struct cajun_node *n, double d)
+{
+	cajun_node_init(n);
+	n->type = CAJUN_NUMBER;
+	n->u.number.d = d;
+}
+
+static inline void cajun_boolean_init(struct cajun_node *n, int b)
+{
+	cajun_node_init(n);
+	n->type = CAJUN_BOOL;
+	n->u.boolean.b = !!b;
+}
+
+static inline void cajun_dict_init(struct cajun_node *n)
+{
+	size_t i;
+	cajun_node_init(n);
+	n->type = CAJUN_DICT;
+	caj_linked_list_head_init(&n->u.dict.llhead);
+	for (i = 0; i < sizeof(n->u.dict.heads)/sizeof(*n->u.dict.heads); i++)
+	{
+		caj_rb_tree_nocmp_init(&n->u.dict.heads[i]);
+	}
+}
+
 static inline uint32_t cajun_key_hash(const char *key, size_t keysz)
 {
 	return caj_murmur_buf(0x12345678U, key, keysz);
@@ -62,6 +131,8 @@ int cajun_node_cmp_asym(struct caj_string_plus_len *a, struct caj_rb_tree_node *
 
 int cajun_node_cmp(struct caj_rb_tree_node *a, struct caj_rb_tree_node *b, void *ud);
 
-struct cajun_node *cajun_dict_get(struct cajun_node *n, char *key, size_t keysz);
+struct cajun_node *cajun_dict_get(struct cajun_node *n, const char *key, size_t keysz);
+
+int cajun_dict_add(struct cajun_node *parent, const char *key, size_t keysz, struct cajun_node *child);
 
 #endif
