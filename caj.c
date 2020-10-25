@@ -208,7 +208,7 @@ static inline char *caj_get_key(struct caj_ctx *caj)
 	return caj->key;
 }
 
-int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz)
+int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 {
 	const unsigned char *data = (const unsigned char*)vdata;
 	ssize_t sz = (ssize_t)usz;
@@ -933,9 +933,10 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz)
 		}
 		return -EINVAL;
 	}
-	if (caj->mode == CAJ_MODE_EXPONENT || caj->mode == CAJ_MODE_MANTISSA ||
-	    caj->mode == CAJ_MODE_MANTISSA_FRAC)
+	if ((caj->mode == CAJ_MODE_EXPONENT || caj->mode == CAJ_MODE_MANTISSA ||
+	     caj->mode == CAJ_MODE_MANTISSA_FRAC) && eof)
 	{
+		caj->mode = CAJ_MODE_COMMA;
 		if (caj->handler->handle_number == NULL)
 		{
 			if (caj->keystacksz <= 0)

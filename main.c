@@ -75,10 +75,23 @@ int main(int argc, char **argv)
 	char *data = " {   \"foo\": [1, 2, 3], \"bar\": 4, \"baz\": {}, \"barf\": []   , \"quux\": [true, false, null]  }";
 	int ret;
 	caj_init(&ctx, &myhandler);
-	ret = caj_feed(&ctx, data, strlen(data));
+#if 1
+	ret = caj_feed(&ctx, data, strlen(data), 1);
 	if (ret != 0)
 	{
 		printf("ret %d\n", ret);
+		return 1;
 	}
+#else
+	for (int i = 0; i < (int)strlen(data); i++)
+	{
+		ret = caj_feed(&ctx, data+i, 1, (i == (int)strlen(data) - 1));
+		if (ret != 0)
+		{
+			printf("ret %d\n", ret);
+			return 1;
+		}
+	}
+#endif
 	return 0;
 }
