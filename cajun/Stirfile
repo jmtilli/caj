@@ -1,0 +1,28 @@
+@subfile
+@strict
+
+$(SRC_LIB) = ["cajun.c", "cajrbtree.c"]
+$(SRC_PROG) = []
+
+$(SRC) = [@$(SRC_LIB), @$(SRC_PROG)]
+$(OBJ_LIB) = @sufsuball($(SRC_LIB), ".c", ".o")
+$(OBJ) = @sufsuball($(SRC), ".c", ".o")
+$(DEP) = @sufsuball($(SRC), ".c", ".d")
+$(PROG) = @sufsuball($(SRC_PROG), ".c", "")
+
+@phonyrule: 'all': 'libcajun.a'
+
+@patrule: $(PROG): '%': '%.o' 'libcajun.a'
+@	[$(CC), @$(CFLAGS), "-o", $@, $<, 'libcajun.a']
+
+@patrule: $(OBJ): '%.o': '%.c' '%.d'
+@	[$(CC), @$(CFLAGS), "-c", "-o", $@, $<]
+
+@patrule: $(DEP): '%.d': '%.c'
+@	[$(CC), @$(CFLAGS), "-MM", "-o", $@, $<]
+
+'libcajun.a': $(OBJ_LIB)
+@	["rm", "-f", $@]
+@	["ar", "rvs", $@, @@suffilter($^, ".o")]
+
+@cdepincludes @autophony @autotarget @ignore [@$(DEP)]
