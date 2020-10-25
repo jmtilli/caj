@@ -146,6 +146,87 @@ int cajun_node_cmp(struct caj_rb_tree_node *a, struct caj_rb_tree_node *b, void 
 
 struct cajun_node *cajun_dict_get(struct cajun_node *n, const char *key, size_t keysz);
 
+enum cajun_null_mode {
+	CAJUN_FORBID_NONE = 0,
+	CAJUN_FORBID_NULL,
+	CAJUN_FORBID_MISSING,
+	CAJUN_FORBID_BOTH,
+};
+
+static inline struct cajun_node *cajun_dict_get_object(struct cajun_node *dict, const char *key, size_t keysz, enum cajun_null_mode null_mode)
+{
+	struct cajun_node *n = cajun_dict_get(dict, key, keysz);
+	if (n == NULL)
+	{
+		if (null_mode == CAJUN_FORBID_BOTH || null_mode == CAJUN_FORBID_MISSING)
+		{
+			abort();
+		}
+		return NULL;
+	}
+	if (n->type == CAJUN_NULL)
+	{
+		if (null_mode == CAJUN_FORBID_BOTH || null_mode == CAJUN_FORBID_NULL)
+		{
+			abort();
+		}
+		return n;
+	}
+	return n;
+}
+
+static inline struct cajun_node *cajun_dict_get_not_null(struct cajun_node *dict, const char *key, size_t keysz)
+{
+	struct cajun_node *n = cajun_dict_get_object(dict, key, keysz, CAJUN_FORBID_BOTH);
+	return n;
+}
+
+static inline int cajun_dict_get_boolean_not_null(struct cajun_node *dict, const char *key, size_t keysz)
+{
+	struct cajun_node *n = cajun_dict_get_object(dict, key, keysz, CAJUN_FORBID_BOTH);
+	if (n->type != CAJUN_BOOL)
+	{
+		abort();
+	}
+	return n->u.boolean.b;
+}
+
+static inline int cajun_dict_is_boolean(struct cajun_node *dict, const char *key, size_t keysz, enum cajun_null_mode null_mode)
+{
+	struct cajun_node *n = cajun_dict_get(dict, key, keysz);
+	if (n == NULL)
+	{
+		if (null_mode == CAJUN_FORBID_BOTH || null_mode == CAJUN_FORBID_MISSING)
+		{
+			return 0;
+		}
+		return 1;
+	}
+	if (n->type == CAJUN_NULL)
+	{
+		if (null_mode == CAJUN_FORBID_BOTH || null_mode == CAJUN_FORBID_NULL)
+		{
+			return 0;
+		}
+		return 1;
+	}
+	return n->type == CAJUN_BOOL;
+}
+
+static inline int cajun_dict_get_boolean(struct cajun_node *dict, const char *key, size_t keysz, int default_value, enum cajun_null_mode null_mode)
+{
+	struct cajun_node *n = cajun_dict_get_object(dict, key, keysz, null_mode);
+	if (n == NULL || n->type == CAJUN_NULL)
+	{
+		return default_value;
+	}
+	if (n->type != CAJUN_BOOL)
+	{
+		abort();
+	}
+	return n->u.boolean.b;
+}
+
 int cajun_dict_add(struct cajun_node *parent, const char *key, size_t keysz, struct cajun_node *child);
 
 int cajun_array_add(struct cajun_node *parent, struct cajun_node *child);
