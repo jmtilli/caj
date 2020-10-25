@@ -26,6 +26,16 @@ type that is not available in C language. Thus any C JSON library will probably
 have a custom implementation of the associative array, which may differ from
 the implementation that you want to use in your program.
 
+## C API for JSON union (CAJUN): a tree-based parser for JSON in C language
+
+CAJUN uses CAJ to parse to populate a union-based parse tree. The associative
+array data type is a small hash table where every hash bucket is a red-black
+tree; in addition, all associative array entries are linked together to
+preserve the order.
+
+CAJUN offers a rich function set allowing querying the data from the parse
+tree.
+
 ## How to build
 
 CAJ is built using Stirmake. How to install it:
