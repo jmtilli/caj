@@ -1936,6 +1936,8 @@ static inline unsigned short cajun_array_get_ushort(struct cajun_node *dict, siz
 
 const struct caj_handler_vtable cajun_vtable;
 
+// FIXME this is recursive, shouldn't be inlite
+// FIXME the recursion can result in stack overflow, should prevent that
 static inline void cajun_node_free(struct cajun_node *n)
 {
 	size_t i;
