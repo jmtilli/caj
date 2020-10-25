@@ -6,8 +6,8 @@
 $CC ?= "cc"
 $CFLAGS ?= ["-g", "-O2", "-Wall", "-Wextra", "-Wsign-conversion", "-Wno-missing-field-initializers", "-Wno-unused-parameter", "-Wshadow", "-Wstrict-prototypes", "-Wmissing-prototypes", "-Wpointer-arith", "-Werror", "-std=gnu11", "-fPIC"]
 
-$(SRC_LIB) = ["caj.c"]
-$(SRC_PROG) = ["main.c"]
+$(SRC_LIB) = ["caj.c", "caj_out.c"]
+$(SRC_PROG) = ["main.c", "outmain.c"]
 
 $(SRC) = [@$(SRC_LIB), @$(SRC_PROG)]
 $(OBJ_LIB) = @sufsuball($(SRC_LIB), ".c", ".o")
