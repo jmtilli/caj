@@ -1,6 +1,7 @@
 #include "cajrbtree.h"
 #include "cajlinkedlist.h"
 #include "cajun.h"
+#include "../caj.h"
 #include <stdlib.h>
 
 int cajun_node_cmp_asym(struct caj_string_plus_len *a, struct caj_rb_tree_node *b, void *ud)
@@ -182,4 +183,259 @@ static inline void cajun_node_free(struct cajun_node *n)
 	}
 	memset(n, 0, sizeof(*n));
 	n->type = CAJUN_NULL;
+}
+
+int cajun_start_dict(struct caj_handler *cajh, const char *key, size_t keysz)
+{
+	struct cajun_ctx *ctx = cajh->userdata;
+	struct cajun_node *dict = cajun_node_new();
+	int ret = 0;
+	if (dict == NULL)
+	{
+		return -ENOMEM;
+	}
+	cajun_dict_init(dict);
+	if (ctx->nsz >= ctx->ncap)
+	{
+		size_t newcap = 2*ctx->nsz + 16;
+		struct cajun_node **newns;
+		newns = realloc(ctx->ns, newcap * sizeof(*ctx->ns));
+		if (newns == NULL)
+		{
+			cajun_node_free(dict);
+			free(dict);
+			return -ENOMEM;
+		}
+		ctx->ns = newns;
+		ctx->ncap = newcap;
+	}
+	if (ctx->nsz > 0)
+	{
+		if (ctx->ns[ctx->nsz-1]->type == CAJUN_DICT)
+		{
+			ret = cajun_dict_add(ctx->ns[ctx->nsz-1], key, keysz, dict);
+		}
+		else
+		{
+			ret = cajun_array_add(ctx->ns[ctx->nsz-1], dict);
+		}
+	}
+	if (ret != 0)
+	{
+		cajun_node_free(dict);
+		free(dict);
+		return ret;
+	}
+	ctx->ns[ctx->nsz++] = dict;
+	if (ctx->n == NULL)
+	{
+		ctx->n = dict;
+	}
+	return 0;
+}
+int cajun_end_dict(struct caj_handler *cajh, const char *key, size_t keysz)
+{
+	struct cajun_ctx *ctx = cajh->userdata;
+	if (ctx->nsz == 0)
+	{
+		abort();
+	}
+	ctx->nsz--;
+	return 0;
+}
+int cajun_start_array(struct caj_handler *cajh, const char *key, size_t keysz)
+{
+	struct cajun_ctx *ctx = cajh->userdata;
+	struct cajun_node *ar = cajun_node_new();
+	int ret = 0;
+	if (ar == NULL)
+	{
+		return -ENOMEM;
+	}
+	cajun_array_init(ar);
+	if (ctx->nsz >= ctx->ncap)
+	{
+		size_t newcap = 2*ctx->nsz + 16;
+		struct cajun_node **newns;
+		newns = realloc(ctx->ns, newcap * sizeof(*ctx->ns));
+		if (newns == NULL)
+		{
+			cajun_node_free(ar);
+			free(ar);
+			return -ENOMEM;
+		}
+		ctx->ns = newns;
+		ctx->ncap = newcap;
+	}
+	if (ctx->nsz > 0)
+	{
+		if (ctx->ns[ctx->nsz-1]->type == CAJUN_DICT)
+		{
+			ret = cajun_dict_add(ctx->ns[ctx->nsz-1], key, keysz, ar);
+		}
+		else
+		{
+			ret = cajun_array_add(ctx->ns[ctx->nsz-1], ar);
+		}
+	}
+	if (ret != 0)
+	{
+		cajun_node_free(ar);
+		free(ar);
+		return ret;
+	}
+	ctx->ns[ctx->nsz++] = ar;
+	if (ctx->n == NULL)
+	{
+		ctx->n = ar;
+	}
+	return 0;
+}
+int cajun_end_array(struct caj_handler *cajh, const char *key, size_t keysz)
+{
+	struct cajun_ctx *ctx = cajh->userdata;
+	if (ctx->nsz == 0)
+	{
+		abort();
+	}
+	ctx->nsz--;
+	return 0;
+}
+int cajun_handle_null(struct caj_handler *cajh, const char *key, size_t keysz)
+{
+	struct cajun_ctx *ctx = cajh->userdata;
+	struct cajun_node *n = cajun_node_new();
+	int ret = 0;
+	if (n == NULL)
+	{
+		return -ENOMEM;
+	}
+	cajun_null_init(n);
+	if (ctx->nsz > 0)
+	{
+		if (ctx->ns[ctx->nsz-1]->type == CAJUN_DICT)
+		{
+			ret = cajun_dict_add(ctx->ns[ctx->nsz-1], key, keysz, n);
+		}
+		else
+		{
+			ret = cajun_array_add(ctx->ns[ctx->nsz-1], n);
+		}
+	}
+	if (ret != 0)
+	{
+		cajun_node_free(n);
+		free(n);
+		return ret;
+	}
+	if (ctx->n == NULL)
+	{
+		ctx->n = n;
+	}
+	return 0;
+}
+int cajun_handle_string(struct caj_handler *cajh, const char *key, size_t keysz, const char *val, size_t valsz)
+{
+	struct cajun_ctx *ctx = cajh->userdata;
+	struct cajun_node *n = cajun_node_new();
+	int ret = 0;
+	if (n == NULL)
+	{
+		return -ENOMEM;
+	}
+	ret = cajun_string_init(n, val, valsz);
+	if (ret != 0)
+	{
+		cajun_node_free(n);
+		free(n);
+		return ret;
+	}
+	if (ctx->nsz > 0)
+	{
+		if (ctx->ns[ctx->nsz-1]->type == CAJUN_DICT)
+		{
+			ret = cajun_dict_add(ctx->ns[ctx->nsz-1], key, keysz, n);
+		}
+		else
+		{
+			ret = cajun_array_add(ctx->ns[ctx->nsz-1], n);
+		}
+	}
+	if (ret != 0)
+	{
+		cajun_node_free(n);
+		free(n);
+		return ret;
+	}
+	if (ctx->n == NULL)
+	{
+		ctx->n = n;
+	}
+	return 0;
+}
+int cajun_handle_number(struct caj_handler *cajh, const char *key, size_t keysz, double d)
+{
+	struct cajun_ctx *ctx = cajh->userdata;
+	struct cajun_node *n = cajun_node_new();
+	int ret = 0;
+	if (n == NULL)
+	{
+		return -ENOMEM;
+	}
+	cajun_number_init(n, d);
+	if (ctx->nsz > 0)
+	{
+		if (ctx->ns[ctx->nsz-1]->type == CAJUN_DICT)
+		{
+			ret = cajun_dict_add(ctx->ns[ctx->nsz-1], key, keysz, n);
+		}
+		else
+		{
+			ret = cajun_array_add(ctx->ns[ctx->nsz-1], n);
+		}
+	}
+	if (ret != 0)
+	{
+		cajun_node_free(n);
+		free(n);
+		return ret;
+	}
+	if (ctx->n == NULL)
+	{
+		ctx->n = n;
+	}
+	return 0;
+}
+int cajun_handle_boolean(struct caj_handler *cajh, const char *key, size_t keysz, int b)
+{
+	struct cajun_ctx *ctx = cajh->userdata;
+	struct cajun_node *n = cajun_node_new();
+	int ret = 0;
+	if (n == NULL)
+	{
+		return -ENOMEM;
+	}
+	cajun_boolean_init(n, b);
+	if (ctx->nsz > 0)
+	{
+		if (ctx->ns[ctx->nsz-1]->type == CAJUN_DICT)
+		{
+			ret = cajun_dict_add(ctx->ns[ctx->nsz-1], key, keysz, n);
+		}
+		else
+		{
+			ret = cajun_array_add(ctx->ns[ctx->nsz-1], n);
+		}
+	}
+	if (ret != 0)
+	{
+		cajun_node_free(n);
+		free(n);
+		return ret;
+	}
+	if (ctx->n == NULL)
+	{
+		ctx->n = n;
+	}
+	return 0;
 }

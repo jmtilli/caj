@@ -5,6 +5,7 @@
 #include "cajlinkedlist.h"
 #include "cajmurmur.h"
 #include "cajcontainerof.h"
+#include "../caj.h"
 #include <stdint.h>
 #include <stdlib.h>
 
@@ -148,5 +149,29 @@ struct cajun_node *cajun_dict_get(struct cajun_node *n, const char *key, size_t 
 int cajun_dict_add(struct cajun_node *parent, const char *key, size_t keysz, struct cajun_node *child);
 
 int cajun_array_add(struct cajun_node *parent, struct cajun_node *child);
+
+struct cajun_ctx {
+	struct cajun_node *n;
+	struct cajun_node **ns;
+	size_t nsz;
+	size_t ncap;
+};
+
+static inline void cajun_ctx_init(struct cajun_ctx *ctx)
+{
+	ctx->n = NULL;
+	ctx->ns = NULL;
+	ctx->nsz = 0;
+	ctx->ncap = 0;
+}
+
+int cajun_start_dict(struct caj_handler *cajh, const char *key, size_t keysz);
+int cajun_end_dict(struct caj_handler *cajh, const char *key, size_t keysz);
+int cajun_start_array(struct caj_handler *cajh, const char *key, size_t keysz);
+int cajun_end_array(struct caj_handler *cajh, const char *key, size_t keysz);
+int cajun_handle_null(struct caj_handler *cajh, const char *key, size_t keysz);
+int cajun_handle_string(struct caj_handler *cajh, const char *key, size_t keysz, const char *val, size_t valsz);
+int cajun_handle_number(struct caj_handler *cajh, const char *key, size_t keysz, double d);
+int cajun_handle_boolean(struct caj_handler *cajh, const char *key, size_t keysz, int b);
 
 #endif
