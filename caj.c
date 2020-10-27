@@ -797,7 +797,7 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 		if ((caj->mode == CAJ_MODE_MANTISSA || caj->mode == CAJ_MODE_MANTISSA_FIRST))
 		{
 			caj->mode = CAJ_MODE_MANTISSA;
-			if (isdigit(data[i]))
+			if (isdigit((unsigned char)data[i]))
 			{
 				caj->d *= 10;
 				caj->d += (data[i] - '0');
@@ -843,7 +843,7 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 		}
 		if (caj->mode == CAJ_MODE_MANTISSA_FRAC || caj->mode == CAJ_MODE_MANTISSA_FRAC_FIRST)
 		{
-			if (isdigit(data[i]))
+			if (isdigit((unsigned char)data[i]))
 			{
 				caj->add_exponent++;
 				caj->d *= 10;
@@ -898,7 +898,7 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 				caj->mode = CAJ_MODE_EXPONENT_FIRST;
 				continue;
 			}
-			if (isdigit(data[i]))
+			if (isdigit((unsigned char)data[i]))
 			{
 				caj->exponent *= 10;
 				caj->exponent += (data[i] - '0');
@@ -909,7 +909,7 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 		}
 		if (caj->mode == CAJ_MODE_EXPONENT_FIRST || caj->mode == CAJ_MODE_EXPONENT)
 		{
-			if (isdigit(data[i]))
+			if (isdigit((unsigned char)data[i]))
 			{
 				caj->exponent *= 10;
 				caj->exponent += (data[i] - '0');
