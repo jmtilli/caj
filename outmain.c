@@ -13,7 +13,7 @@ int main(int argc, char **argv)
 	struct caj_out_ctx ctx;
 	caj_out_init(&ctx, 0, 4, datasink, NULL);
 	caj_out_add_start_dict(&ctx);
-	caj_out_put_start_array(&ctx, "foo", 3);
+	caj_out_put_start_array(&ctx, "foo");
 	caj_out_add_number(&ctx, 1);
 	caj_out_add_number(&ctx, 2);
 	caj_out_add_number(&ctx, 3);
@@ -27,12 +27,12 @@ int main(int argc, char **argv)
 	caj_out_add_number(&ctx, 4.8);
 	caj_out_add_number(&ctx, 4.9);
 	caj_out_end_array(&ctx);
-	caj_out_put_number(&ctx, "bar", 3, 4);
-	caj_out_put_start_dict(&ctx, "baz", 3);
+	caj_out_put_number(&ctx, "bar", 4);
+	caj_out_put_start_dict(&ctx, "baz");
 	caj_out_end_dict(&ctx);
-	caj_out_put_start_array(&ctx, "barf", 4);
+	caj_out_put_start_array(&ctx, "barf");
 	caj_out_end_array(&ctx);
-	caj_out_put_start_array(&ctx, "quux", 4);
+	caj_out_put_start_array(&ctx, "quux");
 	caj_out_add_boolean(&ctx, 1);
 	caj_out_add_boolean(&ctx, 0);
 	caj_out_add_null(&ctx);

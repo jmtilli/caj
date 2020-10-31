@@ -209,21 +209,25 @@ static inline double myintpow10(int exponent)
 	return a;
 }
 
+static int caj_internal_put_flop(struct caj_out_ctx *ctx, double d)
+{
+	char buf128[128];
+	pretty_ftoa(buf128, sizeof(buf128), d);
+	ctx->datasink(ctx, buf128, strlen(buf128));
+	return 0;
+}
 static int caj_internal_put_number(struct caj_out_ctx *ctx, double d)
 {
 	int64_t i64 = (int64_t)d;
-	char buf128[128];
 	if ((double)i64 == d && i64 <= (1LL<<48) && i64 >= -(1LL<<48))
 	{
 		// Let's represent at most 48-bit integers accurately
 		return caj_internal_put_i64(ctx, i64);
 	}
-	pretty_ftoa(buf128, sizeof(buf128), d);
-	ctx->datasink(ctx, buf128, strlen(buf128));
-	return 0;
+	return caj_internal_put_flop(ctx, d);
 }
 
-int caj_out_put_start_dict(struct caj_out_ctx *ctx, const char *key, size_t keysz)
+int caj_out_put2_start_dict(struct caj_out_ctx *ctx, const char *key, size_t keysz)
 {
 	if (ctx->veryfirst)
 	{
@@ -236,7 +240,11 @@ int caj_out_put_start_dict(struct caj_out_ctx *ctx, const char *key, size_t keys
 	ctx->curindentlevel++;
 	return 0;
 }
-int caj_out_put_start_array(struct caj_out_ctx *ctx, const char *key, size_t keysz)
+int caj_out_put_start_dict(struct caj_out_ctx *ctx, const char *key)
+{
+	return caj_out_put2_start_dict(ctx, key, strlen(key));
+}
+int caj_out_put2_start_array(struct caj_out_ctx *ctx, const char *key, size_t keysz)
 {
 	if (ctx->veryfirst)
 	{
@@ -248,6 +256,10 @@ int caj_out_put_start_array(struct caj_out_ctx *ctx, const char *key, size_t key
 	ctx->first = 1;
 	ctx->curindentlevel++;
 	return 0;
+}
+int caj_out_put_start_array(struct caj_out_ctx *ctx, const char *key)
+{
+	return caj_out_put2_start_array(ctx, key, strlen(key));
 }
 int caj_out_add_start_dict(struct caj_out_ctx *ctx)
 {
@@ -303,7 +315,7 @@ int caj_out_end_array(struct caj_out_ctx *ctx)
 	ctx->datasink(ctx, "]", 1);
 	return 0;
 }
-int caj_out_put_string(struct caj_out_ctx *ctx, const char *key, size_t keysz, const char *val, size_t valsz)
+int caj_out_put22_string(struct caj_out_ctx *ctx, const char *key, size_t keysz, const char *val, size_t valsz)
 {
 	if (ctx->veryfirst)
 	{
@@ -316,7 +328,11 @@ int caj_out_put_string(struct caj_out_ctx *ctx, const char *key, size_t keysz, c
 	ctx->first = 0;
 	return 0;
 }
-int caj_out_add_string(struct caj_out_ctx *ctx, const char *val, size_t valsz)
+int caj_out_put_string(struct caj_out_ctx *ctx, const char *key, const char *val)
+{
+	return caj_out_put22_string(ctx, key, strlen(key), val, strlen(val));
+}
+int caj_out_add2_string(struct caj_out_ctx *ctx, const char *val, size_t valsz)
 {
 	if (!ctx->veryfirst)
 	{
@@ -327,7 +343,28 @@ int caj_out_add_string(struct caj_out_ctx *ctx, const char *val, size_t valsz)
 	ctx->first = 0;
 	return 0;
 }
-int caj_out_put_number(struct caj_out_ctx *ctx, const char *key, size_t keysz, double d)
+int caj_out_add_string(struct caj_out_ctx *ctx, const char *val)
+{
+	return caj_out_add2_string(ctx, val, strlen(val));
+}
+int caj_out_put2_flop(struct caj_out_ctx *ctx, const char *key, size_t keysz, double d)
+{
+	if (ctx->veryfirst)
+	{
+		abort();
+	}
+	caj_out_indent(ctx, !ctx->first);
+	caj_internal_put_string(ctx, key, keysz);
+	ctx->datasink(ctx, ": ", 2);
+	caj_internal_put_flop(ctx, d);
+	ctx->first = 0;
+	return 0;
+}
+int caj_out_put_flop(struct caj_out_ctx *ctx, const char *key, double d)
+{
+	return caj_out_put2_flop(ctx, key, strlen(key), d);
+}
+int caj_out_put2_number(struct caj_out_ctx *ctx, const char *key, size_t keysz, double d)
 {
 	if (ctx->veryfirst)
 	{
@@ -337,6 +374,38 @@ int caj_out_put_number(struct caj_out_ctx *ctx, const char *key, size_t keysz, d
 	caj_internal_put_string(ctx, key, keysz);
 	ctx->datasink(ctx, ": ", 2);
 	caj_internal_put_number(ctx, d);
+	ctx->first = 0;
+	return 0;
+}
+int caj_out_put_number(struct caj_out_ctx *ctx, const char *key, double d)
+{
+	return caj_out_put2_number(ctx, key, strlen(key), d);
+}
+int caj_out_put2_i64(struct caj_out_ctx *ctx, const char *key, size_t keysz, int64_t i)
+{
+	if (ctx->veryfirst)
+	{
+		abort();
+	}
+	caj_out_indent(ctx, !ctx->first);
+	caj_internal_put_string(ctx, key, keysz);
+	ctx->datasink(ctx, ": ", 2);
+	caj_internal_put_i64(ctx, i);
+	ctx->first = 0;
+	return 0;
+}
+int caj_out_put_i64(struct caj_out_ctx *ctx, const char *key, int64_t i)
+{
+	return caj_out_put2_i64(ctx, key, strlen(key), i);
+}
+int caj_out_add_flop(struct caj_out_ctx *ctx, double d)
+{
+	if (!ctx->veryfirst)
+	{
+		caj_out_indent(ctx, !ctx->first);
+	}
+	ctx->veryfirst = 0;
+	caj_internal_put_flop(ctx, d);
 	ctx->first = 0;
 	return 0;
 }
@@ -351,7 +420,18 @@ int caj_out_add_number(struct caj_out_ctx *ctx, double d)
 	ctx->first = 0;
 	return 0;
 }
-int caj_out_put_boolean(struct caj_out_ctx *ctx, const char *key, size_t keysz, int b)
+int caj_out_add_i64(struct caj_out_ctx *ctx, int64_t i)
+{
+	if (!ctx->veryfirst)
+	{
+		caj_out_indent(ctx, !ctx->first);
+	}
+	ctx->veryfirst = 0;
+	caj_internal_put_i64(ctx, i);
+	ctx->first = 0;
+	return 0;
+}
+int caj_out_put2_boolean(struct caj_out_ctx *ctx, const char *key, size_t keysz, int b)
 {
 	if (ctx->veryfirst)
 	{
@@ -369,6 +449,10 @@ int caj_out_put_boolean(struct caj_out_ctx *ctx, const char *key, size_t keysz, 
 	}
 	ctx->first = 0;
 	return 0;
+}
+int caj_out_put_boolean(struct caj_out_ctx *ctx, const char *key, int b)
+{
+	return caj_out_put2_boolean(ctx, key, strlen(key), b);
 }
 int caj_out_add_boolean(struct caj_out_ctx *ctx, int b)
 {
@@ -388,7 +472,7 @@ int caj_out_add_boolean(struct caj_out_ctx *ctx, int b)
 	ctx->first = 0;
 	return 0;
 }
-int caj_out_put_null(struct caj_out_ctx *ctx, const char *key, size_t keysz)
+int caj_out_put2_null(struct caj_out_ctx *ctx, const char *key, size_t keysz)
 {
 	if (ctx->veryfirst)
 	{
@@ -399,6 +483,10 @@ int caj_out_put_null(struct caj_out_ctx *ctx, const char *key, size_t keysz)
 	ctx->datasink(ctx, ": null", 6);
 	ctx->first = 0;
 	return 0;
+}
+int caj_out_put_null(struct caj_out_ctx *ctx, const char *key)
+{
+	return caj_out_put2_null(ctx, key, strlen(key));
 }
 int caj_out_add_null(struct caj_out_ctx *ctx)
 {
