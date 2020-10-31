@@ -2,6 +2,7 @@
 #define _CAJ_H_
 
 #include <stddef.h>
+#include "streamingatof.h"
 
 struct caj_handler;
 
@@ -59,10 +60,6 @@ struct caj_ctx {
 	unsigned char sz; // uescape or token
 	char uescape[5];
 	unsigned char keypresent:1;
-	unsigned char negative:1;
-	unsigned char expnegative:1;
-	int add_exponent;
-	int exponent;
 	char *key;
 	size_t keysz;
 	size_t keycap;
@@ -73,7 +70,7 @@ struct caj_ctx {
 	size_t valsz;
 	size_t valcap;
 	struct caj_handler *handler;
-	double d;
+	struct streaming_atof_ctx streamingatof;
 };
 
 void caj_init(struct caj_ctx *caj, struct caj_handler *handler);

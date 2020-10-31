@@ -1,3 +1,6 @@
 [submodule "prettyftoa"]
 	path = prettyftoa
 	url = https://github.com/jmtilli/prettyftoa.git
+[submodule "streamingatof"]
+	path = streamingatof
+	url = https://github.com/jmtilli/streamingatof.git

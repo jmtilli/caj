@@ -9,7 +9,8 @@ $(OBJ_LIB) = @sufsuball($(SRC_LIB), ".c", ".o")
 $(OBJ) = @sufsuball($(SRC), ".c", ".o")
 $(DEP) = @sufsuball($(SRC), ".c", ".d")
 $(PROG) = @sufsuball($(SRC_PROG), ".c", "")
-$(LIBS) = ["../libcaj.a"]
+$(LIBS) = ["../libcaj.a", "../streamingatof/libstreamingatof.a"]
+$(CFLAGS) = [@$(CFLAGS), "-I../streamingatof"]
 
 @phonyrule: 'all': 'libcajun.a' $(PROG)
 

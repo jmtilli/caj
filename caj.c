@@ -13,10 +13,6 @@ void caj_init(struct caj_ctx *caj, struct caj_handler *handler)
 	caj->sz = 0;
 	memset(caj->uescape, 0, sizeof(caj->uescape));
 	caj->keypresent = 0;
-	caj->negative = 0;
-	caj->expnegative = 0;
-	caj->add_exponent = 0;
-	caj->exponent = 0;
 	caj->key = NULL;
 	caj->keysz = 0;
 	caj->keycap = 0;
@@ -27,7 +23,6 @@ void caj_init(struct caj_ctx *caj, struct caj_handler *handler)
 	caj->valsz = 0;
 	caj->valcap = 0;
 	caj->handler = handler;
-	caj->d = 0;
 }
 
 void caj_free(struct caj_ctx *caj)
@@ -188,22 +183,6 @@ static inline double myintpow10(int exponent)
 	return a;
 }
 
-static inline double caj_get_number(struct caj_ctx *caj)
-{
-	double d = caj->d;
-	int exponent = caj->exponent;
-	if (caj->expnegative)
-	{
-		exponent = -exponent;
-	}
-	d *= myintpow10(exponent - caj->add_exponent);
-	if (caj->negative)
-	{
-		d = -d;
-	}
-	return d;
-}
-
 static inline size_t caj_get_keysz(struct caj_ctx *caj)
 {
 	if (caj->keypresent == 0)
@@ -224,6 +203,7 @@ static inline char *caj_get_key(struct caj_ctx *caj)
 int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 {
 	const unsigned char *data = (const unsigned char*)vdata;
+	const char *cdata = (const char*)vdata;
 	ssize_t sz = (ssize_t)usz;
 	ssize_t i;
 	int ret;
@@ -764,24 +744,18 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 		}
 		if ((caj->mode == CAJ_MODE_VAL || caj->mode == CAJ_MODE_FIRSTVAL) && (isdigit((unsigned char)data[i]) || data[i] == '-'))
 		{
-			caj->negative = 0;
+			streaming_atof_init(&caj->streamingatof);
 			if (data[i] == '-')
 			{
-				caj->negative = 1;
+				streaming_atof_feed(&caj->streamingatof, &cdata[i], 1);
 				caj->mode = CAJ_MODE_MANTISSA_FIRST;
 				continue;
 			}
 			caj->mode = CAJ_MODE_MANTISSA_FIRST;
 		}
-		if (caj->mode == CAJ_MODE_MANTISSA_FIRST)
-		{
-			caj->d = 0;
-			caj->add_exponent = 0;
-			caj->exponent = 0;
-			caj->expnegative = 0;
-		}
 		if (caj->mode == CAJ_MODE_MANTISSA_FIRST && data[i] == '0')
 		{
+			streaming_atof_feed(&caj->streamingatof, &cdata[i], 1);
 			caj->mode = CAJ_MODE_PERIOD_OR_EXPONENT_CHAR;
 			continue;
 		}
@@ -797,6 +771,7 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 		{
 			if (data[i] == 'e' || data[i] == 'E')
 			{
+				streaming_atof_feed(&caj->streamingatof, &cdata[i], 1);
 				caj->mode = CAJ_MODE_EXPONENT_SIGN;
 				continue;
 			}
@@ -807,8 +782,7 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 			caj->mode = CAJ_MODE_MANTISSA;
 			if (isdigit((unsigned char)data[i]))
 			{
-				caj->d *= 10;
-				caj->d += (data[i] - '0');
+				streaming_atof_feed(&caj->streamingatof, &cdata[i], 1);
 				continue;
 			}
 			if (caj->mode == CAJ_MODE_MANTISSA_FIRST)
@@ -817,11 +791,13 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 			}
 			if (data[i] == '.')
 			{
+				streaming_atof_feed(&caj->streamingatof, &cdata[i], 1);
 				caj->mode = CAJ_MODE_MANTISSA_FRAC_FIRST;
 				continue;
 			}
 			if (data[i] == 'e' || data[i] == 'E')
 			{
+				streaming_atof_feed(&caj->streamingatof, &cdata[i], 1);
 				caj->mode = CAJ_MODE_EXPONENT_SIGN;
 				continue;
 			}
@@ -838,7 +814,7 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 			ret = caj->handler->vtable->handle_number(
 				caj->handler,
 				caj_get_key(caj), caj_get_keysz(caj),
-				caj_get_number(caj));
+				streaming_atof_end(&caj->streamingatof));
 			if (ret != 0)
 			{
 				return ret;
@@ -853,9 +829,7 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 		{
 			if (isdigit((unsigned char)data[i]))
 			{
-				caj->add_exponent++;
-				caj->d *= 10;
-				caj->d += (data[i] - '0');
+				streaming_atof_feed(&caj->streamingatof, &cdata[i], 1);
 				caj->mode = CAJ_MODE_MANTISSA_FRAC;
 				continue;
 			}
@@ -865,6 +839,7 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 			}
 			if (data[i] == 'e' || data[i] == 'E')
 			{
+				streaming_atof_feed(&caj->streamingatof, &cdata[i], 1);
 				caj->mode = CAJ_MODE_EXPONENT_SIGN;
 				continue;
 			}
@@ -881,7 +856,7 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 			ret = caj->handler->vtable->handle_number(
 				caj->handler,
 				caj_get_key(caj), caj_get_keysz(caj),
-				caj_get_number(caj));
+				streaming_atof_end(&caj->streamingatof));
 			if (ret != 0)
 			{
 				return ret;
@@ -896,20 +871,19 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 		{
 			if (data[i] == '+')
 			{
-				caj->expnegative = 0;
+				streaming_atof_feed(&caj->streamingatof, &cdata[i], 1);
 				caj->mode = CAJ_MODE_EXPONENT_FIRST;
 				continue;
 			}
 			if (data[i] == '-')
 			{
-				caj->expnegative = 1;
+				streaming_atof_feed(&caj->streamingatof, &cdata[i], 1);
 				caj->mode = CAJ_MODE_EXPONENT_FIRST;
 				continue;
 			}
 			if (isdigit((unsigned char)data[i]))
 			{
-				caj->exponent *= 10;
-				caj->exponent += (data[i] - '0');
+				streaming_atof_feed(&caj->streamingatof, &cdata[i], 1);
 				caj->mode = CAJ_MODE_EXPONENT;
 				continue;
 			}
@@ -919,8 +893,7 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 		{
 			if (isdigit((unsigned char)data[i]))
 			{
-				caj->exponent *= 10;
-				caj->exponent += (data[i] - '0');
+				streaming_atof_feed(&caj->streamingatof, &cdata[i], 1);
 				caj->mode = CAJ_MODE_EXPONENT;
 				continue;
 			}
@@ -941,7 +914,7 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 			ret = caj->handler->vtable->handle_number(
 				caj->handler,
 				caj_get_key(caj), caj_get_keysz(caj),
-				caj_get_number(caj));
+				streaming_atof_end(&caj->streamingatof));
 			if (ret != 0)
 			{
 				return ret;
@@ -969,7 +942,7 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 		ret = caj->handler->vtable->handle_number(
 			caj->handler,
 			caj_get_key(caj), caj_get_keysz(caj),
-			caj_get_number(caj));
+			streaming_atof_end(&caj->streamingatof));
 		if (ret != 0)
 		{
 			return ret;
