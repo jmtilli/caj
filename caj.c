@@ -744,191 +744,57 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 		}
 		if ((caj->mode == CAJ_MODE_VAL || caj->mode == CAJ_MODE_FIRSTVAL) && (isdigit((unsigned char)data[i]) || data[i] == '-'))
 		{
+			caj->mode = CAJ_MODE_NUMBER;
 			streaming_atof_init(&caj->streamingatof);
-			if (data[i] == '-')
+		}
+		if (caj->mode == CAJ_MODE_NUMBER)
+		{
+			size_t tofeed;
+			ssize_t szret;
+			tofeed = (size_t)(sz - i);
+			szret = streaming_atof_feed(&caj->streamingatof, &cdata[i], tofeed);
+			if (szret < 0)
 			{
-				streaming_atof_feed(&caj->streamingatof, &cdata[i], 1);
-				caj->mode = CAJ_MODE_MANTISSA_FIRST;
-				continue;
-			}
-			caj->mode = CAJ_MODE_MANTISSA_FIRST;
-		}
-		if (caj->mode == CAJ_MODE_MANTISSA_FIRST && data[i] == '0')
-		{
-			streaming_atof_feed(&caj->streamingatof, &cdata[i], 1);
-			caj->mode = CAJ_MODE_PERIOD_OR_EXPONENT_CHAR;
-			continue;
-		}
-		if (caj->mode == CAJ_MODE_PERIOD_OR_EXPONENT_CHAR && (data[i] == 'e' || data[i] == 'E'))
-		{
-			caj->mode = CAJ_MODE_EXPONENT_CHAR;
-		}
-		else if (caj->mode == CAJ_MODE_PERIOD_OR_EXPONENT_CHAR && data[i] == '.')
-		{
-			caj->mode = CAJ_MODE_MANTISSA;
-		}
-		if (caj->mode == CAJ_MODE_EXPONENT_CHAR)
-		{
-			if (data[i] == 'e' || data[i] == 'E')
-			{
-				streaming_atof_feed(&caj->streamingatof, &cdata[i], 1);
-				caj->mode = CAJ_MODE_EXPONENT_SIGN;
-				continue;
-			}
-			return -EINVAL;
-		}
-		if ((caj->mode == CAJ_MODE_MANTISSA || caj->mode == CAJ_MODE_MANTISSA_FIRST))
-		{
-			caj->mode = CAJ_MODE_MANTISSA;
-			if (isdigit((unsigned char)data[i]))
-			{
-				streaming_atof_feed(&caj->streamingatof, &cdata[i], 1);
-				continue;
-			}
-			if (caj->mode == CAJ_MODE_MANTISSA_FIRST)
-			{
+				printf("szret %zd\n", szret);
 				return -EINVAL;
 			}
-			if (data[i] == '.')
+			if (szret > sz - i)
 			{
-				streaming_atof_feed(&caj->streamingatof, &cdata[i], 1);
-				caj->mode = CAJ_MODE_MANTISSA_FRAC_FIRST;
-				continue;
+				abort();
 			}
-			if (data[i] == 'e' || data[i] == 'E')
+			if (szret < sz - i)
 			{
-				streaming_atof_feed(&caj->streamingatof, &cdata[i], 1);
-				caj->mode = CAJ_MODE_EXPONENT_SIGN;
-				continue;
-			}
-			caj->mode = CAJ_MODE_COMMA;
-			i--;
-			if (caj->handler->vtable->handle_number == NULL)
-			{
+				caj->mode = CAJ_MODE_COMMA;
+				if (caj->handler->vtable->handle_number == NULL)
+				{
+					if (caj->keystacksz <= 0)
+					{
+						return -EOVERFLOW;
+					}
+					i += szret;
+					i--;
+					continue;
+				}
+				ret = caj->handler->vtable->handle_number(
+					caj->handler,
+					caj_get_key(caj), caj_get_keysz(caj),
+					streaming_atof_end(&caj->streamingatof));
+				if (ret != 0)
+				{
+					return ret;
+				}
 				if (caj->keystacksz <= 0)
 				{
 					return -EOVERFLOW;
 				}
-				continue;
 			}
-			ret = caj->handler->vtable->handle_number(
-				caj->handler,
-				caj_get_key(caj), caj_get_keysz(caj),
-				streaming_atof_end(&caj->streamingatof));
-			if (ret != 0)
-			{
-				return ret;
-			}
-			if (caj->keystacksz <= 0)
-			{
-				return -EOVERFLOW;
-			}
-			continue;
-		}
-		if (caj->mode == CAJ_MODE_MANTISSA_FRAC || caj->mode == CAJ_MODE_MANTISSA_FRAC_FIRST)
-		{
-			if (isdigit((unsigned char)data[i]))
-			{
-				streaming_atof_feed(&caj->streamingatof, &cdata[i], 1);
-				caj->mode = CAJ_MODE_MANTISSA_FRAC;
-				continue;
-			}
-			if (caj->mode == CAJ_MODE_MANTISSA_FRAC_FIRST)
-			{
-				return -EINVAL;
-			}
-			if (data[i] == 'e' || data[i] == 'E')
-			{
-				streaming_atof_feed(&caj->streamingatof, &cdata[i], 1);
-				caj->mode = CAJ_MODE_EXPONENT_SIGN;
-				continue;
-			}
-			caj->mode = CAJ_MODE_COMMA;
+			i += szret;
 			i--;
-			if (caj->handler->vtable->handle_number == NULL)
-			{
-				if (caj->keystacksz <= 0)
-				{
-					return -EOVERFLOW;
-				}
-				continue;
-			}
-			ret = caj->handler->vtable->handle_number(
-				caj->handler,
-				caj_get_key(caj), caj_get_keysz(caj),
-				streaming_atof_end(&caj->streamingatof));
-			if (ret != 0)
-			{
-				return ret;
-			}
-			if (caj->keystacksz <= 0)
-			{
-				return -EOVERFLOW;
-			}
-			continue;
-		}
-		if (caj->mode == CAJ_MODE_EXPONENT_SIGN)
-		{
-			if (data[i] == '+')
-			{
-				streaming_atof_feed(&caj->streamingatof, &cdata[i], 1);
-				caj->mode = CAJ_MODE_EXPONENT_FIRST;
-				continue;
-			}
-			if (data[i] == '-')
-			{
-				streaming_atof_feed(&caj->streamingatof, &cdata[i], 1);
-				caj->mode = CAJ_MODE_EXPONENT_FIRST;
-				continue;
-			}
-			if (isdigit((unsigned char)data[i]))
-			{
-				streaming_atof_feed(&caj->streamingatof, &cdata[i], 1);
-				caj->mode = CAJ_MODE_EXPONENT;
-				continue;
-			}
-			return -EINVAL;
-		}
-		if (caj->mode == CAJ_MODE_EXPONENT_FIRST || caj->mode == CAJ_MODE_EXPONENT)
-		{
-			if (isdigit((unsigned char)data[i]))
-			{
-				streaming_atof_feed(&caj->streamingatof, &cdata[i], 1);
-				caj->mode = CAJ_MODE_EXPONENT;
-				continue;
-			}
-			if (caj->mode == CAJ_MODE_EXPONENT_FIRST)
-			{
-				return -EINVAL;
-			}
-			caj->mode = CAJ_MODE_COMMA;
-			i--;
-			if (caj->handler->vtable->handle_number == NULL)
-			{
-				if (caj->keystacksz <= 0)
-				{
-					return -EOVERFLOW;
-				}
-				continue;
-			}
-			ret = caj->handler->vtable->handle_number(
-				caj->handler,
-				caj_get_key(caj), caj_get_keysz(caj),
-				streaming_atof_end(&caj->streamingatof));
-			if (ret != 0)
-			{
-				return ret;
-			}
-			if (caj->keystacksz <= 0)
-			{
-				return -EOVERFLOW;
-			}
 			continue;
 		}
 		return -EINVAL;
 	}
-	if ((caj->mode == CAJ_MODE_EXPONENT || caj->mode == CAJ_MODE_MANTISSA ||
-	     caj->mode == CAJ_MODE_MANTISSA_FRAC) && eof)
+	if (caj->mode == CAJ_MODE_NUMBER && eof)
 	{
 		caj->mode = CAJ_MODE_COMMA;
 		if (caj->handler->vtable->handle_number == NULL)
