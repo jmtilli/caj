@@ -782,8 +782,16 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 		}
 		if (caj->mode == CAJ_MODE_MANTISSA_FIRST && data[i] == '0')
 		{
-			caj->mode = CAJ_MODE_EXPONENT_CHAR;
+			caj->mode = CAJ_MODE_PERIOD_OR_EXPONENT_CHAR;
 			continue;
+		}
+		if (caj->mode == CAJ_MODE_PERIOD_OR_EXPONENT_CHAR && (data[i] == 'e' || data[i] == 'E'))
+		{
+			caj->mode = CAJ_MODE_EXPONENT_CHAR;
+		}
+		else if (caj->mode == CAJ_MODE_PERIOD_OR_EXPONENT_CHAR && data[i] == '.')
+		{
+			caj->mode = CAJ_MODE_MANTISSA;
 		}
 		if (caj->mode == CAJ_MODE_EXPONENT_CHAR)
 		{

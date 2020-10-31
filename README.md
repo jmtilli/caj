@@ -62,6 +62,8 @@ Then build CAJ by:
 
 ```
 cd caj
+git submodule init
+git submodule update
 smka
 ```
 

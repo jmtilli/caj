@@ -17,6 +17,15 @@ int main(int argc, char **argv)
 	caj_out_add_number(&ctx, 1);
 	caj_out_add_number(&ctx, 2);
 	caj_out_add_number(&ctx, 3);
+	caj_out_add_number(&ctx, 4.1);
+	caj_out_add_number(&ctx, 4.2);
+	caj_out_add_number(&ctx, 4.3);
+	caj_out_add_number(&ctx, 4.4);
+	caj_out_add_number(&ctx, 4.5);
+	caj_out_add_number(&ctx, 4.6);
+	caj_out_add_number(&ctx, 4.7);
+	caj_out_add_number(&ctx, 4.8);
+	caj_out_add_number(&ctx, 4.9);
 	caj_out_end_array(&ctx);
 	caj_out_put_number(&ctx, "bar", 3, 4);
 	caj_out_put_start_dict(&ctx, "baz", 3);

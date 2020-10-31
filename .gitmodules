@@ -1,0 +1,3 @@
+[submodule "prettyftoa"]
+	path = prettyftoa
+	url = https://github.com/jmtilli/prettyftoa.git

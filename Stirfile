@@ -5,6 +5,7 @@
 
 $CC ?= "cc"
 $CFLAGS ?= ["-g", "-O2", "-Wall", "-Wextra", "-Wsign-conversion", "-Wno-missing-field-initializers", "-Wno-unused-parameter", "-Wshadow", "-Wstrict-prototypes", "-Wmissing-prototypes", "-Wpointer-arith", "-Werror", "-std=gnu11", "-fPIC"]
+$CFLAGSINC = ["-Iprettyftoa"]
 
 $(SRC_LIB) = ["caj.c", "caj_out.c"]
 $(SRC_PROG) = ["main.c", "outmain.c"]
@@ -15,16 +16,16 @@ $(OBJ) = @sufsuball($(SRC), ".c", ".o")
 $(DEP) = @sufsuball($(SRC), ".c", ".d")
 $(PROG) = @sufsuball($(SRC_PROG), ".c", "")
 
-@phonyrule: 'all': 'libcaj.a' $(PROG) 'cajun/all'
+@phonyrule: 'all': 'libcaj.a' $(PROG) 'cajun/all' 'prettyftoa/all'
 
-@patrule: $(PROG): '%': '%.o' 'libcaj.a'
-@	[$(CC), @$(CFLAGS), "-o", $@, $<, 'libcaj.a']
+@patrule: $(PROG): '%': '%.o' 'libcaj.a' 'prettyftoa/libprettyftoa.a'
+@	[$(CC), @$(CFLAGS), @$(CFLAGSINC), "-o", $@, $<, 'libcaj.a', 'prettyftoa/libprettyftoa.a']
 
 @patrule: $(OBJ): '%.o': '%.c' '%.d'
-@	[$(CC), @$(CFLAGS), "-c", "-o", $@, $<]
+@	[$(CC), @$(CFLAGS), @$(CFLAGSINC), "-c", "-o", $@, $<]
 
 @patrule: $(DEP): '%.d': '%.c'
-@	[$(CC), @$(CFLAGS), "-MM", "-o", $@, $<]
+@	[$(CC), @$(CFLAGS), @$(CFLAGSINC), "-MM", "-o", $@, $<]
 
 'libcaj.a': $(OBJ_LIB)
 @	["rm", "-f", $@]
@@ -33,3 +34,8 @@ $(PROG) = @sufsuball($(SRC_PROG), ".c", "")
 @cdepincludes @autophony @autotarget @ignore [@$(DEP)]
 
 @dirinclude "cajun"
+@beginholeyscope
+  $CC = @LP$CC
+  $CFLAGS = @LP$CFLAGS
+  @projdirinclude "prettyftoa"
+@endscope

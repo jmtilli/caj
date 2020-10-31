@@ -1,4 +1,5 @@
 #include "caj_out.h"
+#include "prettyftoa.h"
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -212,25 +213,12 @@ static int caj_internal_put_number(struct caj_out_ctx *ctx, double d)
 {
 	int64_t i64 = (int64_t)d;
 	char buf128[128];
-	if (d < 0.0001 && d > -0.0001)
+	if ((double)i64 == d && i64 <= (1LL<<48) && i64 >= -(1LL<<48))
 	{
-		snprintf(buf128, sizeof(buf128)-1, "%.20e", d);
-		ctx->datasink(ctx, buf128, strlen(buf128));
-		return 0;
-	}
-	if ((double)i64 == d && i64 <= (1LL<<53) && i64 >= -(1LL<<53))
-	{
+		// Let's represent at most 48-bit integers accurately
 		return caj_internal_put_i64(ctx, i64);
 	}
-	snprintf(buf128, sizeof(buf128)-5, "%.20g", d);
-	size_t len = strlen(buf128);
-	if (strchr(buf128, '.') == NULL)
-	{
-		// Let's not make a floating point value look like an integer
-		buf128[len] = '.';
-		buf128[len+1] = '0';
-		buf128[len+2] = '\0';
-	}
+	pretty_ftoa(buf128, sizeof(buf128), d);
 	ctx->datasink(ctx, buf128, strlen(buf128));
 	return 0;
 }
