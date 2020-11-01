@@ -1,8 +1,8 @@
 @subfile
 @strict
 
-$(SRC_LIB) = ["cajun.c", "cajrbtree.c"]
-$(SRC_PROG) = ["cajuntest.c"]
+$(SRC_LIB) = ["cajun.c", "cajunfrag.c", "cajrbtree.c"]
+$(SRC_PROG) = ["cajuntest.c", "cajunfragtest.c"]
 
 $(SRC) = [@$(SRC_LIB), @$(SRC_PROG)]
 $(OBJ_LIB) = @sufsuball($(SRC_LIB), ".c", ".o")
