@@ -745,7 +745,7 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 		if ((caj->mode == CAJ_MODE_VAL || caj->mode == CAJ_MODE_FIRSTVAL) && (isdigit((unsigned char)data[i]) || data[i] == '-'))
 		{
 			caj->mode = CAJ_MODE_NUMBER;
-			streaming_atof_init(&caj->streamingatof);
+			streaming_atof_init_strict_json(&caj->streamingatof);
 		}
 		if (caj->mode == CAJ_MODE_NUMBER)
 		{
