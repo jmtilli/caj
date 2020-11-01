@@ -37,15 +37,15 @@ int main(int argc, char **argv)
 
 	n = cajun.n;
 
-	ar1 = cajun_dict_get_array_not_null(n, "foo", strlen("foo"));
-	u8 = cajun_dict_get_uint8_not_null(n, "bar", strlen("bar"));
-	dict = cajun_dict_get_dict_not_null(n, "baz", strlen("baz"));
+	ar1 = cajun_dict_get_array_not_null(n, "foo");
+	u8 = cajun_dict_get_uint8_not_null(n, "bar");
+	dict = cajun_dict_get_dict_not_null(n, "baz");
 	if (dict == NULL)
 	{
 		abort();
 	}
-	ar2 = cajun_dict_get_array_not_null(n, "barf", strlen("barf"));
-	ar3 = cajun_dict_get_array_not_null(n, "quux", strlen("quux"));
+	ar2 = cajun_dict_get_array_not_null(n, "barf");
+	ar3 = cajun_dict_get_array_not_null(n, "quux");
 	if (cajun_array_size(ar1) != 3)
 	{
 		abort();

@@ -15,10 +15,10 @@ static int my_end_dict(struct cajunfrag_ctx *ctx, const char *key, size_t keysz,
 {
 	if (cajunfrag_ctx_is1(ctx, 2, "customers", NULL))
 	{
-		printf("id %d\n", cajun_dict_get_int_not_null(n, "id", strlen("id")));
-		printf("account count %d\n", cajun_dict_get_int_not_null(n, "accountCount", strlen("accountCount")));
-		printf("total balance %lg\n", cajun_dict_get_double_not_null(n, "totalBalance", strlen("totalBalance")));
-		printf("name %s\n", cajun_dict_get_string_not_null(n, "name", strlen("name"), NULL));
+		printf("id %d\n", cajun_dict_get_int_not_null(n, "id"));
+		printf("account count %d\n", cajun_dict_get_int_not_null(n, "accountCount"));
+		printf("total balance %lg\n", cajun_dict_get_double_not_null(n, "totalBalance"));
+		printf("name %s\n", cajun_dict_get_string_not_null(n, "name", NULL));
 	}
 	return 0;
 }
