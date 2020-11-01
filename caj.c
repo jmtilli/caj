@@ -755,7 +755,6 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 			szret = streaming_atof_feed(&caj->streamingatof, &cdata[i], tofeed);
 			if (szret < 0)
 			{
-				printf("szret %zd\n", szret);
 				return -EINVAL;
 			}
 			if (szret > sz - i)
@@ -765,6 +764,10 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 			if (szret < sz - i)
 			{
 				caj->mode = CAJ_MODE_COMMA;
+				if (streaming_atof_is_error(&caj->streamingatof))
+				{
+					return -EINVAL;
+				}
 				if (caj->handler->vtable->handle_number == NULL)
 				{
 					if (caj->keystacksz <= 0)
