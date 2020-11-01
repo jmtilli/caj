@@ -107,6 +107,7 @@ int cajun_dict_add(struct cajun_node *parent, const char *key, size_t keysz, str
 		child->keysz = 0;
 		return ret;
 	}
+	child->parent = parent;
 	caj_linked_list_add_tail(&child->llnode, &parent->u.dict.llhead);
 	return 0;
 }
@@ -130,6 +131,7 @@ int cajun_array_add(struct cajun_node *parent, struct cajun_node *child)
 		parent->u.array.nodecap = newcap;
 	}
 	parent->u.array.nodes[parent->u.array.nodesz++] = child;
+	child->parent = parent;
 	return 0;
 }
 

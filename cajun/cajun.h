@@ -23,6 +23,7 @@ struct cajun_node {
 	enum cajun_type type;
 	struct caj_rb_tree_node node;
 	struct caj_linked_list_node llnode;
+	struct cajun_node *parent;
 	union {
 		struct {
 			struct caj_rb_tree_nocmp heads[8];
@@ -53,6 +54,7 @@ static inline void cajun_node_init(struct cajun_node *n)
 	n->keysz = 0;
 	caj_linked_list_node_init(&n->llnode);
 	n->type = CAJUN_NULL;
+	n->parent = NULL;
 }
 
 static inline struct cajun_node *cajun_node_new(void)
