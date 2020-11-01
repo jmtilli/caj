@@ -5,6 +5,7 @@
 #include "../caj_out.h"
 #include <stdlib.h>
 
+// FIXME eliminate recusion as it can cause stack overflow
 static int cajun_node_out_impl(struct caj_out_ctx *ctx, const char *key, size_t keysz, struct cajun_node *n)
 {
 	struct caj_linked_list_node *llnode;
@@ -518,6 +519,119 @@ int cajun_handle_boolean(struct caj_handler *cajh, const char *key, size_t keysz
 		ctx->n = n;
 	}
 	return 0;
+}
+
+static void cajun_node_free_nonrecursive(struct cajun_node *n)
+{
+	struct cajun_node *next;
+	if (n == NULL)
+	{
+		return;
+	}
+	if (n->key != NULL || n->keysz != 0)
+	{
+		abort();
+	}
+	free(n->key);
+	n->key = NULL;
+	n->keysz = 0;
+	while (n != NULL)
+	{
+		switch (n->type) {
+			case CAJUN_NULL:
+			case CAJUN_BOOL:
+			case CAJUN_NUMBER:
+				next = n->parent;
+				memset(n, 0, sizeof(*n));
+				n->type = CAJUN_NULL;
+				if (next != NULL)
+				{
+					free(n);
+				}
+				n = next;
+				break;
+			case CAJUN_STRING:
+				next = n->parent;
+				free(n->u.string.s);
+				n->u.string.s = NULL;
+				n->u.string.sz = 0;
+				memset(n, 0, sizeof(*n));
+				n->type = CAJUN_NULL;
+				if (next != NULL)
+				{
+					free(n);
+				}
+				n = next;
+				break;
+			case CAJUN_DICT:
+				if (!caj_linked_list_is_empty(&n->u.dict.llhead))
+				{
+					struct caj_linked_list_node *node;
+					node = n->u.dict.llhead.node.next;
+					caj_linked_list_delete(node);
+					next = CAJ_CONTAINER_OF(node, struct cajun_node, llnode);
+					if (next->parent != n)
+					{
+						abort();
+					}
+					n = next;
+					free(n->key);
+					n->key = NULL;
+					n->keysz = 0;
+				}
+				else
+				{
+					next = n->parent;
+					memset(n, 0, sizeof(*n));
+					n->type = CAJUN_NULL;
+					if (next != NULL)
+					{
+						free(n);
+					}
+					n = next;
+				}
+				break;
+			case CAJUN_ARRAY:
+				if (n->u.array.nodesz)
+				{
+					next = n->u.array.nodes[--n->u.array.nodesz];
+					if (next->parent != n)
+					{
+						abort();
+					}
+					n = next;
+				}
+				else
+				{
+					next = n->parent;
+					free(n->u.array.nodes);
+					n->u.array.nodes = NULL;
+					memset(n, 0, sizeof(*n));
+					n->type = CAJUN_NULL;
+					if (next != NULL)
+					{
+						free(n);
+					}
+					n = next;
+				}
+				break;
+			default:
+				abort();
+		}
+	}
+}
+
+void cajun_node_free(struct cajun_node *n)
+{
+	if (n == NULL)
+	{
+		return;
+	}
+	if (n->parent != NULL)
+	{
+		abort();
+	}
+	cajun_node_free_nonrecursive(n);
 }
 
 const struct caj_handler_vtable cajun_vtable = {
