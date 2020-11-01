@@ -253,7 +253,18 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 				{
 					if (caj->keystacksz <= 0)
 					{
-						return (i == sz-1) ? 0 : EOVERFLOW;
+						i++;
+						while (i < sz)
+						{
+							if ((data[i] == ' ' || data[i] == '\n' || data[i] == '\r' ||
+							     data[i] == '\t'))
+							{
+								i++;
+								continue;
+							}
+							return -EOVERFLOW;
+						}
+						return 0;
 					}
 					continue;
 				}
@@ -267,7 +278,18 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 				}
 				if (caj->keystacksz <= 0)
 				{
-					return (i == sz-1) ? 0 : EOVERFLOW;
+					i++;
+					while (i < sz)
+					{
+						if ((data[i] == ' ' || data[i] == '\n' || data[i] == '\r' ||
+						     data[i] == '\t'))
+						{
+							i++;
+							continue;
+						}
+						return -EOVERFLOW;
+					}
+					return 0;
 				}
 			}
 			else
@@ -508,7 +530,18 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 				{
 					if (caj->keystacksz <= 0)
 					{
-						return (i == sz-1) ? 0 : EOVERFLOW;
+						i++;
+						while (i < sz)
+						{
+							if ((data[i] == ' ' || data[i] == '\n' || data[i] == '\r' ||
+							     data[i] == '\t'))
+							{
+								i++;
+								continue;
+							}
+							return -EOVERFLOW;
+						}
+						return 0;
 					}
 					continue;
 				}
@@ -521,7 +554,18 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 				}
 				if (caj->keystacksz <= 0)
 				{
-					return (i == sz-1) ? 0 : EOVERFLOW;
+					i++;
+					while (i < sz)
+					{
+						if ((data[i] == ' ' || data[i] == '\n' || data[i] == '\r' ||
+						     data[i] == '\t'))
+						{
+							i++;
+							continue;
+						}
+						return -EOVERFLOW;
+					}
+					return 0;
 				}
 				continue;
 			}
@@ -549,7 +593,18 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 				{
 					if (caj->keystacksz <= 0)
 					{
-						return (i == sz-1) ? 0 : EOVERFLOW;
+						i++;
+						while (i < sz)
+						{
+							if ((data[i] == ' ' || data[i] == '\n' || data[i] == '\r' ||
+							     data[i] == '\t'))
+							{
+								i++;
+								continue;
+							}
+							return -EOVERFLOW;
+						}
+						return 0;
 					}
 					continue;
 				}
@@ -562,7 +617,18 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 				}
 				if (caj->keystacksz <= 0)
 				{
-					return (i == sz-1) ? 0 : EOVERFLOW;
+					i++;
+					while (i < sz)
+					{
+						if ((data[i] == ' ' || data[i] == '\n' || data[i] == '\r' ||
+						     data[i] == '\t'))
+						{
+							i++;
+							continue;
+						}
+						return -EOVERFLOW;
+					}
+					return 0;
 				}
 				continue;
 			}
@@ -629,7 +695,18 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 			{
 				if (caj->keystacksz <= 0)
 				{
-					return (i == sz-1) ? 0 : EOVERFLOW;
+					i++;
+					while (i < sz)
+					{
+						if ((data[i] == ' ' || data[i] == '\n' || data[i] == '\r' ||
+						     data[i] == '\t'))
+						{
+							i++;
+							continue;
+						}
+						return -EOVERFLOW;
+					}
+					return 0;
 				}
 				continue;
 			}
@@ -643,7 +720,18 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 			}
 			if (caj->keystacksz <= 0)
 			{
-				return (i == sz-1) ? 0 : EOVERFLOW;
+				i++;
+				while (i < sz)
+				{
+					if ((data[i] == ' ' || data[i] == '\n' || data[i] == '\r' ||
+					     data[i] == '\t'))
+					{
+						i++;
+						continue;
+					}
+					return -EOVERFLOW;
+				}
+				return 0;
 			}
 			continue;
 		}
@@ -662,7 +750,18 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 			{
 				if (caj->keystacksz <= 0)
 				{
-					return (i == sz-1) ? 0 : EOVERFLOW;
+					i++;
+					while (i < sz)
+					{
+						if ((data[i] == ' ' || data[i] == '\n' || data[i] == '\r' ||
+						     data[i] == '\t'))
+						{
+							i++;
+							continue;
+						}
+						return -EOVERFLOW;
+					}
+					return 0;
 				}
 				continue;
 			}
@@ -676,7 +775,18 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 			}
 			if (caj->keystacksz <= 0)
 			{
-				return (i == sz-1) ? 0 : EOVERFLOW;
+				i++;
+				while (i < sz)
+				{
+					if ((data[i] == ' ' || data[i] == '\n' || data[i] == '\r' ||
+					     data[i] == '\t'))
+					{
+						i++;
+						continue;
+					}
+					return -EOVERFLOW;
+				}
+				return 0;
 			}
 			continue;
 		}
@@ -695,7 +805,18 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 			{
 				if (caj->keystacksz <= 0)
 				{
-					return (i == sz-1) ? 0 : EOVERFLOW;
+					i++;
+					while (i < sz)
+					{
+						if ((data[i] == ' ' || data[i] == '\n' || data[i] == '\r' ||
+						     data[i] == '\t'))
+						{
+							i++;
+							continue;
+						}
+						return -EOVERFLOW;
+					}
+					return 0;
 				}
 				continue;
 			}
@@ -708,7 +829,18 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 			}
 			if (caj->keystacksz <= 0)
 			{
-				return (i == sz-1) ? 0 : EOVERFLOW;
+				i++;
+				while (i < sz)
+				{
+					if ((data[i] == ' ' || data[i] == '\n' || data[i] == '\r' ||
+					     data[i] == '\t'))
+					{
+						i++;
+						continue;
+					}
+					return -EOVERFLOW;
+				}
+				return 0;
 			}
 			continue;
 		}
@@ -770,12 +902,23 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 				}
 				if (caj->handler->vtable->handle_number == NULL)
 				{
-					if (caj->keystacksz <= 0)
-					{
-						return -EOVERFLOW;
-					}
 					i += szret;
 					i--;
+					if (caj->keystacksz <= 0)
+					{
+						i++;
+						while (i < sz)
+						{
+							if ((data[i] == ' ' || data[i] == '\n' || data[i] == '\r' ||
+							     data[i] == '\t'))
+							{
+								i++;
+								continue;
+							}
+							return -EOVERFLOW;
+						}
+						return 0;
+					}
 					continue;
 				}
 				ret = caj->handler->vtable->handle_number(
@@ -786,13 +929,29 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 				{
 					return ret;
 				}
+				i += szret;
+				i--;
 				if (caj->keystacksz <= 0)
 				{
-					return -EOVERFLOW;
+					i++;
+					while (i < sz)
+					{
+						if ((data[i] == ' ' || data[i] == '\n' || data[i] == '\r' ||
+						     data[i] == '\t'))
+						{
+							i++;
+							continue;
+						}
+						return -EOVERFLOW;
+					}
+					return 0;
 				}
 			}
-			i += szret;
-			i--;
+			else
+			{
+				i += szret;
+				i--;
+			}
 			continue;
 		}
 		return -EINVAL;
