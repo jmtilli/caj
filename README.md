@@ -26,6 +26,29 @@ type that is not available in C language. Thus any C JSON library will probably
 have a custom implementation of the associative array, which may differ from
 the implementation that you want to use in your program.
 
+## C API for JSON out (CAJ\_out): a JSON output library for C
+
+Many JSON output libraries require you to convert your own object structure
+into the JSON library object structure before it's able to serialize the
+objects to JSON. CAJ\_out has been designed to be different. It allows you to
+directly output JSON tokens from any functions. Thus, you can create JSON
+serializers for your objects without needing to do any object representation
+conversion. This makes for a more efficient JSON output.
+
+The CAJ\_out library also nicely indents your JSON. The indentation character
+and level are configurable. The CAJ\_out library has a configurable data sink
+allowing you to store the data anywhere you want -- to a file, to a network
+connection or to a memory block.
+
+Also, the CAJ\_out library supports three variants of outputting numbers. One
+variant outputs integers. Another variant outputs floating point numbers that
+are always represented in the most compact form they can be represented, but
+with always a decimal separator or exponent so that they can be identified as
+flaoting point numbers rather than integers. The third variant outputs an
+arbitrary number and automatically makes the choice between integer and
+floating point format (numbers that are exact integers of at most 48 bits are
+always represented without any floating point formatting).
+
 ## C API for JSON union (CAJUN): a tree-based parser for JSON in C language
 
 CAJUN uses CAJ to parse to populate a union-based parse tree. The associative
@@ -35,6 +58,15 @@ preserve the order.
 
 CAJUN offers a rich function set allowing querying the data from the parse
 tree.
+
+## C API for JSON union fragment (CAJUNfrag): a combined event-based/tree-based parser for JSON in C language
+
+CAJUNfrag is an event-driven parser that allows at any point of parsing
+switching to a tree-based model. Thus, you can parse large database dumps of
+many gigabytes with an event-driven approach, and when encountering the
+representation of a single object, parse only that object to a parse tree. This
+allows the convenience of handling objects stored in parse trees, but doesn't
+require the whole dump to be parsed to a single huge multi-gigabyte parse tree.
 
 ## How to build
 
