@@ -3,8 +3,15 @@
 #include <stdint.h>
 #include <string.h>
 
+static int datasink(struct caj_out_ctx *ctx, const char *data, size_t sz)
+{
+	fwrite(data, 1, sz, stdout);
+	return 0;
+}
+
 int main(int argc, char **argv)
 {
+	struct caj_out_ctx outctx;
 	struct caj_ctx caj;
 	struct cajun_ctx cajun;
 	struct caj_handler myhandler = {
@@ -18,6 +25,7 @@ int main(int argc, char **argv)
 	struct cajun_node *ar1, *ar2, *ar3, *dict;
 
 	// FIXME freeing on parse error
+	caj_out_init(&outctx, 0, 4, datasink, NULL);
 	caj_init(&caj, &myhandler);
 	cajun_ctx_init(&cajun);
 	ret = caj_feed(&caj, data, strlen(data), 1);
@@ -78,6 +86,9 @@ int main(int argc, char **argv)
 	{
 		abort();
 	}
+
+	cajun_node_out(&outctx, n);
+	printf("\n");
 
 	cajun_node_free(cajun.n);
 	free(cajun.n);

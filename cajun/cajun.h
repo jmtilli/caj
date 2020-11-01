@@ -6,6 +6,7 @@
 #include "cajmurmur.h"
 #include "cajcontainerof.h"
 #include "../caj.h"
+#include "../caj_out.h"
 #include <stdint.h>
 #include <stdlib.h>
 
@@ -1995,6 +1996,8 @@ static inline void cajun_node_free(struct cajun_node *n)
 	memset(n, 0, sizeof(*n));
 	n->type = CAJUN_NULL;
 }
+
+void cajun_node_out(struct caj_out_ctx *ctx, struct cajun_node *n);
 
 static inline void cajun_ctx_free(struct cajun_ctx *ctx)
 {
