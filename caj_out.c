@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <math.h>
 
 /*
 struct caj_out_ctx {
@@ -212,6 +213,10 @@ static inline double myintpow10(int exponent)
 static int caj_internal_put_flop(struct caj_out_ctx *ctx, double d)
 {
 	char buf128[128];
+	if (!isfinite(d))
+	{
+		abort();
+	}
 	pretty_ftoa(buf128, sizeof(buf128), d);
 	ctx->datasink(ctx, buf128, strlen(buf128));
 	return 0;
