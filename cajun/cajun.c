@@ -5,124 +5,200 @@
 #include "../caj_out.h"
 #include <stdlib.h>
 
-// FIXME eliminate recusion as it can cause stack overflow
-static int cajun_node_out_impl(struct caj_out_ctx *ctx, const char *key, size_t keysz, struct cajun_node *n)
+static int cajun_node_out_nonrecursive(struct caj_out_ctx *ctx, struct cajun_node *root)
 {
-	struct caj_linked_list_node *llnode;
-	size_t i;
+	struct cajun_node *n;
+	struct cajun_node *next;
 	int ret = 0;
-	if (key == NULL)
+	n = root;
+	if (n->type == CAJUN_ARRAY)
 	{
-		switch (n->type)
+		n->u.array.nodeiter = 0;
+		if (n->key == NULL || n == root)
 		{
-			case CAJUN_DICT:
-				ret = caj_out_add_start_dict(ctx);
-				if (ret != 0)
-				{
-					return ret;
-				}
-				CAJ_LINKED_LIST_FOR_EACH(llnode, &n->u.dict.llhead)
-				{
-					struct cajun_node *n2;
-					n2 = CAJ_CONTAINER_OF(llnode, struct cajun_node, llnode);
-					ret = cajun_node_out_impl(ctx, n2->key, n2->keysz, n2);
-					if (ret != 0)
-					{
-						return ret;
-					}
-				}
-				ret = caj_out_end_dict(ctx);
-				if (ret != 0)
-				{
-					return ret;
-				}
-				break;
-			case CAJUN_ARRAY:
-				ret = caj_out_add_start_array(ctx);
-				if (ret != 0)
-				{
-					return ret;
-				}
-				for (i = 0; i < n->u.array.nodesz; i++)
-				{
-					ret = cajun_node_out_impl(ctx, NULL, 0, n->u.array.nodes[i]);
-					if (ret != 0)
-					{
-						return ret;
-					}
-				}
-				ret = caj_out_end_array(ctx);
-				if (ret != 0)
-				{
-					return ret;
-				}
-				break;
-			case CAJUN_STRING:
-				return caj_out_add2_string(ctx, n->u.string.s, n->u.string.sz);
-			case CAJUN_NUMBER:
-				return caj_out_add_number(ctx, n->u.number.d);
-			case CAJUN_BOOL:
-				return caj_out_add_boolean(ctx, !!n->u.boolean.b);
-			case CAJUN_NULL:
-				return caj_out_add_null(ctx);
-			default:
-				abort();
+			ret = caj_out_add_start_array(ctx);
+		}
+		else
+		{
+			ret = caj_out_put2_start_array(ctx, n->key, n->keysz);
 		}
 	}
-	else
+	else if (n->type == CAJUN_DICT)
 	{
-		switch (n->type)
+		n->u.dict.lliter = n->u.dict.llhead.node.next;
+		if (n->key == NULL || n == root)
 		{
-			case CAJUN_DICT:
-				ret = caj_out_put2_start_dict(ctx, n->key, n->keysz);
+			ret = caj_out_add_start_dict(ctx);
+		}
+		else
+		{
+			ret = caj_out_put2_start_dict(ctx, n->key, n->keysz);
+		}
+	}
+	if (ret)
+	{
+		return ret;
+	}
+	while (n != NULL)
+	{
+		switch (n->type) {
+			case CAJUN_NULL:
+				if (n->key == NULL || n == root)
+				{
+					ret = caj_out_add_null(ctx);
+				}
+				else
+				{
+					ret = caj_out_put2_null(ctx, n->key, n->keysz);
+				}
 				if (ret != 0)
 				{
 					return ret;
 				}
-				CAJ_LINKED_LIST_FOR_EACH(llnode, &n->u.dict.llhead)
+				n = (n == root) ? NULL : n->parent;
+				break;
+			case CAJUN_BOOL:
+				if (n->key == NULL || n == root)
 				{
-					struct cajun_node *n2;
-					n2 = CAJ_CONTAINER_OF(llnode, struct cajun_node, llnode);
-					ret = cajun_node_out_impl(ctx, n2->key, n2->keysz, n2);
-					if (ret != 0)
+					ret = caj_out_add_boolean(ctx, !!n->u.boolean.b);
+				}
+				else
+				{
+					ret = caj_out_put2_boolean(ctx, n->key, n->keysz, !!n->u.boolean.b);
+				}
+				if (ret != 0)
+				{
+					return ret;
+				}
+				n = (n == root) ? NULL : n->parent;
+				break;
+			case CAJUN_NUMBER:
+				if (n->key == NULL || n == root)
+				{
+					ret = caj_out_add_number(ctx, n->u.number.d);
+				}
+				else
+				{
+					ret = caj_out_put2_number(ctx, n->key, n->keysz, n->u.number.d);
+				}
+				if (ret != 0)
+				{
+					return ret;
+				}
+				n = (n == root) ? NULL : n->parent;
+				break;
+			case CAJUN_STRING:
+				if (n->key == NULL || n == root)
+				{
+					ret = caj_out_add2_string(ctx, n->u.string.s, n->u.string.sz);
+				}
+				else
+				{
+					ret = caj_out_put22_string(ctx, n->key, n->keysz, n->u.string.s, n->u.string.sz);
+				}
+				if (ret != 0)
+				{
+					return ret;
+				}
+				n = (n == root) ? NULL : n->parent;
+				break;
+			case CAJUN_DICT:
+				if (n->u.dict.lliter != &n->u.dict.llhead.node)
+				{
+					next = CAJ_CONTAINER_OF(n->u.dict.lliter, struct cajun_node, llnode);
+					n->u.dict.lliter = next->llnode.next;
+					if (next->parent != n)
+					{
+						abort();
+					}
+					n = next;
+					if (n->type == CAJUN_ARRAY)
+					{
+						n->u.array.nodeiter = 0;
+						if (n->key == NULL || n == root)
+						{
+							ret = caj_out_add_start_array(ctx);
+						}
+						else
+						{
+							ret = caj_out_put2_start_array(ctx, n->key, n->keysz);
+						}
+					}
+					else if (n->type == CAJUN_DICT)
+					{
+						n->u.dict.lliter = n->u.dict.llhead.node.next;
+						if (n->key == NULL || n == root)
+						{
+							ret = caj_out_add_start_dict(ctx);
+						}
+						else
+						{
+							ret = caj_out_put2_start_dict(ctx, n->key, n->keysz);
+						}
+					}
+					if (ret)
 					{
 						return ret;
 					}
 				}
-				ret = caj_out_end_dict(ctx);
-				if (ret != 0)
+				else
 				{
-					return ret;
+					n = (n == root) ? NULL : n->parent;
+					ret = caj_out_end_dict(ctx);
+					if (ret != 0)
+					{
+						return ret;
+					}
 				}
 				break;
 			case CAJUN_ARRAY:
-				ret = caj_out_put2_start_array(ctx, n->key, n->keysz);
-				if (ret != 0)
+				if (n->u.array.nodeiter < n->u.array.nodesz)
 				{
-					return ret;
+					next = n->u.array.nodes[n->u.array.nodeiter++];
+					if (next->parent != n)
+					{
+						abort();
+					}
+					n = next;
+					if (n->type == CAJUN_ARRAY)
+					{
+						n->u.array.nodeiter = 0;
+						if (n->key == NULL || n == root)
+						{
+							ret = caj_out_add_start_array(ctx);
+						}
+						else
+						{
+							ret = caj_out_put2_start_array(ctx, n->key, n->keysz);
+						}
+					}
+					else if (n->type == CAJUN_DICT)
+					{
+						n->u.dict.lliter = n->u.dict.llhead.node.next;
+						if (n->key == NULL || n == root)
+						{
+							ret = caj_out_add_start_dict(ctx);
+						}
+						else
+						{
+							ret = caj_out_put2_start_dict(ctx, n->key, n->keysz);
+						}
+					}
+					if (ret)
+					{
+						return ret;
+					}
 				}
-				for (i = 0; i < n->u.array.nodesz; i++)
+				else
 				{
-					ret = cajun_node_out_impl(ctx, NULL, 0, n->u.array.nodes[i]);
+					n = (n == root) ? NULL : n->parent;
+					ret = caj_out_end_array(ctx);
 					if (ret != 0)
 					{
 						return ret;
 					}
 				}
-				ret = caj_out_end_array(ctx);
-				if (ret != 0)
-				{
-					return ret;
-				}
 				break;
-			case CAJUN_STRING:
-				return caj_out_put22_string(ctx, n->key, n->keysz, n->u.string.s, n->u.string.sz);
-			case CAJUN_NUMBER:
-				return caj_out_put2_number(ctx, n->key, n->keysz, n->u.number.d);
-			case CAJUN_BOOL:
-				return caj_out_put2_boolean(ctx, n->key, n->keysz, !!n->u.boolean.b);
-			case CAJUN_NULL:
-				return caj_out_put2_null(ctx, n->key, n->keysz);
 			default:
 				abort();
 		}
@@ -132,7 +208,7 @@ static int cajun_node_out_impl(struct caj_out_ctx *ctx, const char *key, size_t 
 
 void cajun_node_out(struct caj_out_ctx *ctx, struct cajun_node *n)
 {
-	cajun_node_out_impl(ctx, NULL, 0, n);
+	cajun_node_out_nonrecursive(ctx, n);
 }
 
 int cajun_node_cmp_asym(struct caj_string_plus_len *a, struct caj_rb_tree_node *b, void *ud)

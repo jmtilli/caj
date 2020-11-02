@@ -29,11 +29,13 @@ struct cajun_node {
 		struct {
 			struct caj_rb_tree_nocmp heads[8];
 			struct caj_linked_list_head llhead;
+			struct caj_linked_list_node *lliter;
 		} dict;
 		struct {
 			struct cajun_node **nodes;
 			size_t nodesz;
 			size_t nodecap;
+			size_t nodeiter;
 		} array;
 		struct {
 			char *s;
