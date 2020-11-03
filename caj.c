@@ -158,31 +158,6 @@ static inline void caj_put_keystack_2(struct caj_ctx *caj)
 	caj->keypresent = 0;
 }
 
-static inline double myintpow10(int exponent)
-{
-	double a = 1.0;
-	double b = 10.0;
-	if (exponent < 0)
-	{
-		return 1.0 / myintpow10(-exponent);
-	}
-	// invariant: a * b^exponent stays the same
-	while (exponent > 0)
-	{
-		if ((exponent % 2) == 0)
-		{
-			exponent /= 2;
-			b *= b;
-		}
-		else
-		{
-			exponent -= 1;
-			a *= b;
-		}
-	}
-	return a;
-}
-
 static inline size_t caj_get_keysz(struct caj_ctx *caj)
 {
 	if (caj->keypresent == 0)
@@ -362,26 +337,26 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 			}
 			if (codepoint < 0x800)
 			{
-				if (caj_put_key(caj, 0xC0 | (codepoint>>6)) != 0)
+				if (caj_put_key(caj, (char)(0xC0 | (codepoint>>6))) != 0)
 				{
 					return -ENOMEM;
 				}
-				if (caj_put_key(caj, 0x80 | (codepoint & 0x3F)) != 0)
+				if (caj_put_key(caj, (char)(0x80 | (codepoint & 0x3F))) != 0)
 				{
 					return -ENOMEM;
 				}
 				caj->mode = CAJ_MODE_KEYSTRING;
 				continue;
 			}
-			if (caj_put_key(caj, 0xE0 | (codepoint>>12)) != 0)
+			if (caj_put_key(caj, (char)(0xE0 | (codepoint>>12))) != 0)
 			{
 				return -ENOMEM;
 			}
-			if (caj_put_key(caj, 0x80 | ((codepoint>>6)&0x3F)) != 0)
+			if (caj_put_key(caj, (char)(0x80 | ((codepoint>>6)&0x3F))) != 0)
 			{
 				return -ENOMEM;
 			}
-			if (caj_put_key(caj, 0x80 | ((codepoint>>0)&0x3F)) != 0)
+			if (caj_put_key(caj, (char)(0x80 | ((codepoint>>0)&0x3F))) != 0)
 			{
 				return -ENOMEM;
 			}
@@ -413,26 +388,26 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 			}
 			if (codepoint < 0x800)
 			{
-				if (caj_put_val(caj, 0xC0 | (codepoint>>6)) != 0)
+				if (caj_put_val(caj, (char)(0xC0 | (codepoint>>6))) != 0)
 				{
 					return -ENOMEM;
 				}
-				if (caj_put_val(caj, 0x80 | (codepoint & 0x3F)) != 0)
+				if (caj_put_val(caj, (char)(0x80 | (codepoint & 0x3F))) != 0)
 				{
 					return -ENOMEM;
 				}
 				caj->mode = CAJ_MODE_STRING;
 				continue;
 			}
-			if (caj_put_val(caj, 0xE0 | (codepoint>>12)) != 0)
+			if (caj_put_val(caj, (char)(0xE0 | (codepoint>>12))) != 0)
 			{
 				return -ENOMEM;
 			}
-			if (caj_put_val(caj, 0x80 | ((codepoint>>6)&0x3F)) != 0)
+			if (caj_put_val(caj, (char)(0x80 | ((codepoint>>6)&0x3F))) != 0)
 			{
 				return -ENOMEM;
 			}
-			if (caj_put_val(caj, 0x80 | ((codepoint>>0)&0x3F)) != 0)
+			if (caj_put_val(caj, (char)(0x80 | ((codepoint>>0)&0x3F))) != 0)
 			{
 				return -ENOMEM;
 			}

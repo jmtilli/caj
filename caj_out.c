@@ -210,31 +210,6 @@ static int caj_internal_put_i64(struct caj_out_ctx *ctx, int64_t i64)
 	return ctx->datasink(ctx, buf128, strlen(buf128));
 }
 
-static inline double myintpow10(int exponent)
-{
-	double a = 1.0;
-	double b = 10.0;
-	if (exponent < 0)
-	{
-		return 1.0 / myintpow10(-exponent);
-	}
-	// invariant: a * b^exponent stays the same
-	while (exponent > 0)
-	{
-		if ((exponent % 2) == 0)
-		{
-			exponent /= 2;
-			b *= b;
-		}
-		else
-		{
-			exponent -= 1;
-			a *= b;
-		}
-	}
-	return a;
-}
-
 static int caj_internal_put_flop(struct caj_out_ctx *ctx, double d)
 {
 	char buf128[128];
