@@ -207,7 +207,10 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 	ssize_t sz = (ssize_t)usz;
 	ssize_t i;
 	int ret;
-	// FIXME check for ssize_t overflow
+	if (sz < 0 || (size_t)sz != usz)
+	{
+		return -EFAULT;
+	}
 	for (i = 0; i < sz; i++)
 	{
 		if (caj->mode == CAJ_MODE_KEYSTRING)
