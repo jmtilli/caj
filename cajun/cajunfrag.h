@@ -1,8 +1,6 @@
 #ifndef _CAJUNFRAG_H_
 #define _CAJUNFRAG_H_
 
-// FIXME for all functions taking in a length: auto-calculating length version
-
 #include "cajrbtree.h"
 #include "cajlinkedlist.h"
 #include "cajmurmur.h"
