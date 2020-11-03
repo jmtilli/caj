@@ -134,6 +134,8 @@ int cajunfrag_start_dict(struct caj_handler *cajh, const char *key, size_t keysz
 {
 	struct cajunfrag_ctx *ctx = cajh->userdata;
 	int ret = 0;
+	void *newblock;
+	struct cajun_node *dict;
 	if (ctx->n == NULL)
 	{
 		if (ctx->keystacksz >= ctx->keystackcap)
@@ -148,7 +150,7 @@ int cajunfrag_start_dict(struct caj_handler *cajh, const char *key, size_t keysz
 			ctx->keystack = newstack;
 			ctx->keystackcap = newcap;
 		}
-		void *newblock = NULL;
+		newblock = NULL;
 		ctx->keystack[ctx->keystacksz].key = NULL;
 		ctx->keystack[ctx->keystacksz].keysz = keysz;
 		if (key != NULL)
@@ -172,7 +174,7 @@ int cajunfrag_start_dict(struct caj_handler *cajh, const char *key, size_t keysz
 		return ret;
 	}
 
-	struct cajun_node *dict = cajun_node_new();
+	dict = cajun_node_new();
 
 	if (dict == NULL)
 	{
@@ -246,6 +248,8 @@ int cajunfrag_end_dict(struct caj_handler *cajh, const char *key, size_t keysz)
 int cajunfrag_start_array(struct caj_handler *cajh, const char *key, size_t keysz)
 {
 	struct cajunfrag_ctx *ctx = cajh->userdata;
+	void *newblock;
+	struct cajun_node *ar;
 	int ret = 0;
 	if (ctx->n == NULL)
 	{
@@ -261,7 +265,7 @@ int cajunfrag_start_array(struct caj_handler *cajh, const char *key, size_t keys
 			ctx->keystack = newstack;
 			ctx->keystackcap = newcap;
 		}
-		void *newblock = NULL;
+		newblock = NULL;
 		ctx->keystack[ctx->keystacksz].key = NULL;
 		ctx->keystack[ctx->keystacksz].keysz = keysz;
 		if (key != NULL)
@@ -285,7 +289,7 @@ int cajunfrag_start_array(struct caj_handler *cajh, const char *key, size_t keys
 		return ret;
 	}
 
-	struct cajun_node *ar = cajun_node_new();
+	ar = cajun_node_new();
 	if (ar == NULL)
 	{
 		return -ENOMEM;
@@ -359,6 +363,7 @@ int cajunfrag_handle_null(struct caj_handler *cajh, const char *key, size_t keys
 {
 	struct cajunfrag_ctx *ctx = cajh->userdata;
 	int ret = 0;
+	struct cajun_node *n;
 	if (ctx->n == NULL)
 	{
 		ret = 0;
@@ -368,7 +373,7 @@ int cajunfrag_handle_null(struct caj_handler *cajh, const char *key, size_t keys
 		}
 		return ret;
 	}
-	struct cajun_node *n = cajun_node_new();
+	n = cajun_node_new();
 	if (n == NULL)
 	{
 		return -ENOMEM;
@@ -397,6 +402,7 @@ int cajunfrag_handle_string(struct caj_handler *cajh, const char *key, size_t ke
 {
 	struct cajunfrag_ctx *ctx = cajh->userdata;
 	int ret = 0;
+	struct cajun_node *n;
 	if (ctx->n == NULL)
 	{
 		ret = 0;
@@ -406,7 +412,7 @@ int cajunfrag_handle_string(struct caj_handler *cajh, const char *key, size_t ke
 		}
 		return ret;
 	}
-	struct cajun_node *n = cajun_node_new();
+	n = cajun_node_new();
 	if (n == NULL)
 	{
 		return -ENOMEM;
@@ -441,6 +447,7 @@ int cajunfrag_handle_number(struct caj_handler *cajh, const char *key, size_t ke
 {
 	struct cajunfrag_ctx *ctx = cajh->userdata;
 	int ret = 0;
+	struct cajun_node *n;
 	if (ctx->n == NULL)
 	{
 		ret = 0;
@@ -450,7 +457,7 @@ int cajunfrag_handle_number(struct caj_handler *cajh, const char *key, size_t ke
 		}
 		return ret;
 	}
-	struct cajun_node *n = cajun_node_new();
+	n = cajun_node_new();
 	if (n == NULL)
 	{
 		return -ENOMEM;
@@ -479,6 +486,7 @@ int cajunfrag_handle_boolean(struct caj_handler *cajh, const char *key, size_t k
 {
 	struct cajunfrag_ctx *ctx = cajh->userdata;
 	int ret = 0;
+	struct cajun_node *n;
 	if (ctx->n == NULL)
 	{
 		ret = 0;
@@ -488,7 +496,7 @@ int cajunfrag_handle_boolean(struct caj_handler *cajh, const char *key, size_t k
 		}
 		return ret;
 	}
-	struct cajun_node *n = cajun_node_new();
+	n = cajun_node_new();
 	if (n == NULL)
 	{
 		return -ENOMEM;
@@ -524,3 +532,31 @@ const struct caj_handler_vtable cajunfrag_vtable = {
 	.handle_number = cajunfrag_handle_number,
 	.handle_boolean = cajunfrag_handle_boolean,
 };
+
+void cajunfrag_ctx_free(struct cajunfrag_ctx *ctx)
+{
+	size_t i;
+	for (i = 0; i < ctx->keystacksz; i++)
+	{
+		free(ctx->keystack[i].key);
+		ctx->keystack[i].key = NULL;
+		ctx->keystack[i].keysz = 0;
+	}
+	free(ctx->keystack);
+	ctx->keystack = NULL;
+	ctx->keystacksz = 0;
+	ctx->keystackcap = 0;
+	while (ctx->n != NULL && ctx->n->parent != NULL)
+	{
+		ctx->n = ctx->n->parent;
+	}
+	if (ctx->n)
+	{
+		cajun_node_free(ctx->n);
+	}
+	ctx->n = NULL;
+	ctx->isdict = 0;
+	ctx->isarray = 0;
+	ctx->handler = NULL;
+	ctx->userdata = NULL;
+}

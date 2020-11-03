@@ -55,33 +55,7 @@ static inline void cajunfrag_ctx_init(struct cajunfrag_ctx *ctx, const struct ca
 	ctx->userdata = NULL;
 }
 
-static inline void cajunfrag_ctx_free(struct cajunfrag_ctx *ctx)
-{
-	size_t i;
-	for (i = 0; i < ctx->keystacksz; i++)
-	{
-		free(ctx->keystack[i].key);
-		ctx->keystack[i].key = NULL;
-		ctx->keystack[i].keysz = 0;
-	}
-	free(ctx->keystack);
-	ctx->keystack = NULL;
-	ctx->keystacksz = 0;
-	ctx->keystackcap = 0;
-	while (ctx->n != NULL && ctx->n->parent != NULL)
-	{
-		ctx->n = ctx->n->parent;
-	}
-	if (ctx->n)
-	{
-		cajun_node_free(ctx->n);
-	}
-	ctx->n = NULL;
-	ctx->isdict = 0;
-	ctx->isarray = 0;
-	ctx->handler = NULL;
-	ctx->userdata = NULL;
-}
+void cajunfrag_ctx_free(struct cajunfrag_ctx *ctx);
 
 int cajunfrag_start_fragment_collection(struct cajunfrag_ctx *fragctx);
 

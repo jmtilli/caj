@@ -328,7 +328,7 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 			codepoint = strtoul(caj->uescape, NULL, 16);
 			if (codepoint < 0x80)
 			{
-				if (caj_put_key(caj, codepoint) != 0)
+				if (caj_put_key(caj, (char)codepoint) != 0)
 				{
 					return -ENOMEM;
 				}
@@ -379,7 +379,7 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 			codepoint = strtoul(caj->uescape, NULL, 16);
 			if (codepoint < 0x80)
 			{
-				if (caj_put_val(caj, codepoint) != 0)
+				if (caj_put_val(caj, (char)codepoint) != 0)
 				{
 					return -ENOMEM;
 				}
