@@ -221,6 +221,18 @@ static int caj_internal_put_flop(struct caj_out_ctx *ctx, double d)
 	ctx->datasink(ctx, buf128, strlen(buf128));
 	return 0;
 }
+static int caj_internal_put_flop_ex(struct caj_out_ctx *ctx, double d)
+{
+	char buf128[128];
+	if (!isfinite(d))
+	{
+		ctx->datasink(ctx, "null", 4);
+		return 0;
+	}
+	pretty_ftoa(buf128, sizeof(buf128), d);
+	ctx->datasink(ctx, buf128, strlen(buf128));
+	return 0;
+}
 static int caj_internal_put_number(struct caj_out_ctx *ctx, double d)
 {
 	int64_t i64 = (int64_t)d;
@@ -230,6 +242,16 @@ static int caj_internal_put_number(struct caj_out_ctx *ctx, double d)
 		return caj_internal_put_i64(ctx, i64);
 	}
 	return caj_internal_put_flop(ctx, d);
+}
+static int caj_internal_put_number_ex(struct caj_out_ctx *ctx, double d)
+{
+	int64_t i64 = (int64_t)d;
+	if ((double)i64 == d && i64 <= (1LL<<48) && i64 >= -(1LL<<48))
+	{
+		// Let's represent at most 48-bit integers accurately
+		return caj_internal_put_i64(ctx, i64);
+	}
+	return caj_internal_put_flop_ex(ctx, d);
 }
 
 int caj_out_put2_start_dict(struct caj_out_ctx *ctx, const char *key, size_t keysz)
@@ -369,6 +391,23 @@ int caj_out_put_flop(struct caj_out_ctx *ctx, const char *key, double d)
 {
 	return caj_out_put2_flop(ctx, key, strlen(key), d);
 }
+int caj_out_put2_flop_ex(struct caj_out_ctx *ctx, const char *key, size_t keysz, double d)
+{
+	if (ctx->veryfirst)
+	{
+		abort();
+	}
+	caj_out_indent(ctx, !ctx->first);
+	caj_internal_put_string(ctx, key, keysz);
+	ctx->datasink(ctx, ": ", 2);
+	caj_internal_put_flop_ex(ctx, d);
+	ctx->first = 0;
+	return 0;
+}
+int caj_out_put_flop_ex(struct caj_out_ctx *ctx, const char *key, double d)
+{
+	return caj_out_put2_flop_ex(ctx, key, strlen(key), d);
+}
 int caj_out_put2_number(struct caj_out_ctx *ctx, const char *key, size_t keysz, double d)
 {
 	if (ctx->veryfirst)
@@ -382,9 +421,26 @@ int caj_out_put2_number(struct caj_out_ctx *ctx, const char *key, size_t keysz, 
 	ctx->first = 0;
 	return 0;
 }
+int caj_out_put2_number_ex(struct caj_out_ctx *ctx, const char *key, size_t keysz, double d)
+{
+	if (ctx->veryfirst)
+	{
+		abort();
+	}
+	caj_out_indent(ctx, !ctx->first);
+	caj_internal_put_string(ctx, key, keysz);
+	ctx->datasink(ctx, ": ", 2);
+	caj_internal_put_number_ex(ctx, d);
+	ctx->first = 0;
+	return 0;
+}
 int caj_out_put_number(struct caj_out_ctx *ctx, const char *key, double d)
 {
 	return caj_out_put2_number(ctx, key, strlen(key), d);
+}
+int caj_out_put_number_ex(struct caj_out_ctx *ctx, const char *key, double d)
+{
+	return caj_out_put2_number_ex(ctx, key, strlen(key), d);
 }
 int caj_out_put2_i64(struct caj_out_ctx *ctx, const char *key, size_t keysz, int64_t i)
 {
@@ -414,6 +470,17 @@ int caj_out_add_flop(struct caj_out_ctx *ctx, double d)
 	ctx->first = 0;
 	return 0;
 }
+int caj_out_add_flop_ex(struct caj_out_ctx *ctx, double d)
+{
+	if (!ctx->veryfirst)
+	{
+		caj_out_indent(ctx, !ctx->first);
+	}
+	ctx->veryfirst = 0;
+	caj_internal_put_flop_ex(ctx, d);
+	ctx->first = 0;
+	return 0;
+}
 int caj_out_add_number(struct caj_out_ctx *ctx, double d)
 {
 	if (!ctx->veryfirst)
@@ -422,6 +489,17 @@ int caj_out_add_number(struct caj_out_ctx *ctx, double d)
 	}
 	ctx->veryfirst = 0;
 	caj_internal_put_number(ctx, d);
+	ctx->first = 0;
+	return 0;
+}
+int caj_out_add_number_ex(struct caj_out_ctx *ctx, double d)
+{
+	if (!ctx->veryfirst)
+	{
+		caj_out_indent(ctx, !ctx->first);
+	}
+	ctx->veryfirst = 0;
+	caj_internal_put_number_ex(ctx, d);
 	ctx->first = 0;
 	return 0;
 }
