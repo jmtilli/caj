@@ -7,7 +7,7 @@
 
 /*
 struct caj_out_ctx {
-	int (*datasink)(struct caj_out_ctx *ctx, const char *data, size_t sz); // FIXME handle ret
+	int (*datasink)(struct caj_out_ctx *ctx, const char *data, size_t sz);
 	void *userdata;
 	const char *commanlindentchars;
 	size_t indentcharsz;
@@ -48,12 +48,13 @@ void caj_out_init(struct caj_out_ctx *ctx, int tabs, size_t indentamount,
 	ctx->userdata = userdata;
 }
 
-static void caj_out_indent(struct caj_out_ctx *ctx, int comma)
+static int caj_out_indent(struct caj_out_ctx *ctx, int comma)
 {
 	size_t toindent = ctx->curindentlevel * ctx->indentamount;
 	int first = 1;
 	const char *indentchars = ctx->commanlindentchars;
 	size_t off = 2;
+	int ret;
 	if (!comma)
 	{
 		indentchars++;
@@ -61,8 +62,7 @@ static void caj_out_indent(struct caj_out_ctx *ctx, int comma)
 	}
 	if (toindent == 0)
 	{
-		ctx->datasink(ctx, "\n", 1);
-		return;
+		return ctx->datasink(ctx, "\n", 1);
 	}
 	while (toindent > 0)
 	{
@@ -71,11 +71,17 @@ static void caj_out_indent(struct caj_out_ctx *ctx, int comma)
 		{
 			thisround = ctx->indentcharsz;
 		}
-		ctx->datasink(ctx, first ? indentchars : (indentchars + off),
-		              first ? (thisround + off) : thisround);
+		ret = ctx->datasink(ctx,
+		                    first ? indentchars : (indentchars + off),
+		                    first ? (thisround + off) : thisround);
+		if (ret)
+		{
+			return ret;
+		}
 		toindent -= thisround;
 		first = 0;
 	}
+	return 0;
 }
 
 static inline int caj_needs_escape(char ch)
@@ -148,32 +154,52 @@ static int caj_internal_put_string(struct caj_out_ctx *ctx, const char *s, size_
 {
 	size_t i = 0;
 	size_t seglen;
-	ctx->datasink(ctx, "\"", 1);
+	int ret;
+	ret = ctx->datasink(ctx, "\"", 1);
+	if (ret)
+	{
+		return ret;
+	}
 	while (i < sz)
 	{
 		if (caj_needs_escape(s[i]))
 		{
 			if (s[i] == '"')
 			{
-				ctx->datasink(ctx, "\\\"", 2);
+				ret = ctx->datasink(ctx, "\\\"", 2);
+				if (ret)
+				{
+					return ret;
+				}
 			}
 			else if (s[i] == '\\')
 			{
-				ctx->datasink(ctx, "\\\"", 2);
+				ret = ctx->datasink(ctx, "\\\"", 2);
+				if (ret)
+				{
+					return ret;
+				}
 			}
 			else
 			{
-				ctx->datasink(ctx, caj_escape[(int)s[i]].buf, caj_escape[(int)s[i]].sz);
+				ret = ctx->datasink(ctx, caj_escape[(int)s[i]].buf, caj_escape[(int)s[i]].sz);
+				if (ret)
+				{
+					return ret;
+				}
 			}
 			i++;
 			continue;
 		}
 		seglen = caj_first_to_escape(s+i, sz-i);
-		ctx->datasink(ctx, s+i, seglen);
+		ret = ctx->datasink(ctx, s+i, seglen);
+		if (ret)
+		{
+			return ret;
+		}
 		i += seglen;
 	}
-	ctx->datasink(ctx, "\"", 1);
-	return 0;
+	return ctx->datasink(ctx, "\"", 1);
 }
 
 static int caj_internal_put_i64(struct caj_out_ctx *ctx, int64_t i64)
@@ -181,8 +207,7 @@ static int caj_internal_put_i64(struct caj_out_ctx *ctx, int64_t i64)
 	long long ll = i64;
 	char buf128[128];
 	snprintf(buf128, sizeof(buf128)-1, "%lld", ll);
-	ctx->datasink(ctx, buf128, strlen(buf128));
-	return 0;
+	return ctx->datasink(ctx, buf128, strlen(buf128));
 }
 
 static inline double myintpow10(int exponent)
@@ -218,20 +243,17 @@ static int caj_internal_put_flop(struct caj_out_ctx *ctx, double d)
 		abort();
 	}
 	pretty_ftoa(buf128, sizeof(buf128), d);
-	ctx->datasink(ctx, buf128, strlen(buf128));
-	return 0;
+	return ctx->datasink(ctx, buf128, strlen(buf128));
 }
 static int caj_internal_put_flop_ex(struct caj_out_ctx *ctx, double d)
 {
 	char buf128[128];
 	if (!isfinite(d))
 	{
-		ctx->datasink(ctx, "null", 4);
-		return 0;
+		return ctx->datasink(ctx, "null", 4);
 	}
 	pretty_ftoa(buf128, sizeof(buf128), d);
-	ctx->datasink(ctx, buf128, strlen(buf128));
-	return 0;
+	return ctx->datasink(ctx, buf128, strlen(buf128));
 }
 static int caj_internal_put_number(struct caj_out_ctx *ctx, double d)
 {
@@ -256,16 +278,24 @@ static int caj_internal_put_number_ex(struct caj_out_ctx *ctx, double d)
 
 int caj_out_put2_start_dict(struct caj_out_ctx *ctx, const char *key, size_t keysz)
 {
+	int ret;
 	if (ctx->veryfirst)
 	{
 		abort();
 	}
-	caj_out_indent(ctx, !ctx->first);
-	caj_internal_put_string(ctx, key, keysz);
-	ctx->datasink(ctx, ": {", 3);
+	ret = caj_out_indent(ctx, !ctx->first);
+	if (ret)
+	{
+		return ret;
+	}
+	ret = caj_internal_put_string(ctx, key, keysz);
+	if (ret)
+	{
+		return ret;
+	}
 	ctx->first = 1;
 	ctx->curindentlevel++;
-	return 0;
+	return ctx->datasink(ctx, ": {", 3);
 }
 int caj_out_put_start_dict(struct caj_out_ctx *ctx, const char *key)
 {
@@ -273,16 +303,24 @@ int caj_out_put_start_dict(struct caj_out_ctx *ctx, const char *key)
 }
 int caj_out_put2_start_array(struct caj_out_ctx *ctx, const char *key, size_t keysz)
 {
+	int ret;
 	if (ctx->veryfirst)
 	{
 		abort();
 	}
-	caj_out_indent(ctx, !ctx->first);
-	caj_internal_put_string(ctx, key, keysz);
-	ctx->datasink(ctx, ": [", 3);
+	ret = caj_out_indent(ctx, !ctx->first);
+	if (ret)
+	{
+		return ret;
+	}
+	ret = caj_internal_put_string(ctx, key, keysz);
+	if (ret)
+	{
+		return ret;
+	}
 	ctx->first = 1;
 	ctx->curindentlevel++;
-	return 0;
+	return ctx->datasink(ctx, ": [", 3);
 }
 int caj_out_put_start_array(struct caj_out_ctx *ctx, const char *key)
 {
@@ -290,30 +328,39 @@ int caj_out_put_start_array(struct caj_out_ctx *ctx, const char *key)
 }
 int caj_out_add_start_dict(struct caj_out_ctx *ctx)
 {
+	int ret;
 	if (!ctx->veryfirst)
 	{
-		caj_out_indent(ctx, !ctx->first);
+		ret = caj_out_indent(ctx, !ctx->first);
+		if (ret)
+		{
+			return ret;
+		}
 	}
 	ctx->veryfirst = 0;
-	ctx->datasink(ctx, "{", 1);
 	ctx->first = 1;
 	ctx->curindentlevel++;
-	return 0;
+	return ctx->datasink(ctx, "{", 1);
 }
 int caj_out_add_start_array(struct caj_out_ctx *ctx)
 {
+	int ret;
 	if (!ctx->veryfirst)
 	{
-		caj_out_indent(ctx, !ctx->first);
+		ret = caj_out_indent(ctx, !ctx->first);
+		if (ret)
+		{
+			return ret;
+		}
 	}
 	ctx->veryfirst = 0;
-	ctx->datasink(ctx, "{", 1);
 	ctx->first = 1;
 	ctx->curindentlevel++;
-	return 0;
+	return ctx->datasink(ctx, "{", 1);
 }
 int caj_out_end_dict(struct caj_out_ctx *ctx)
 {
+	int ret;
 	if (ctx->curindentlevel == 0)
 	{
 		abort();
@@ -321,14 +368,18 @@ int caj_out_end_dict(struct caj_out_ctx *ctx)
 	ctx->curindentlevel--;
 	if (!ctx->first)
 	{
-		caj_out_indent(ctx, 0);
+		ret = caj_out_indent(ctx, 0);
+		if (ret)
+		{
+			return ret;
+		}
 	}
 	ctx->first = 0;
-	ctx->datasink(ctx, "}", 1);
-	return 0;
+	return ctx->datasink(ctx, "}", 1);
 }
 int caj_out_end_array(struct caj_out_ctx *ctx)
 {
+	int ret;
 	if (ctx->curindentlevel == 0)
 	{
 		abort();
@@ -336,24 +387,39 @@ int caj_out_end_array(struct caj_out_ctx *ctx)
 	ctx->curindentlevel--;
 	if (!ctx->first)
 	{
-		caj_out_indent(ctx, 0);
+		ret = caj_out_indent(ctx, 0);
+		if (ret)
+		{
+			return ret;
+		}
 	}
 	ctx->first = 0;
-	ctx->datasink(ctx, "]", 1);
-	return 0;
+	return ctx->datasink(ctx, "]", 1);
 }
 int caj_out_put22_string(struct caj_out_ctx *ctx, const char *key, size_t keysz, const char *val, size_t valsz)
 {
+	int ret;
 	if (ctx->veryfirst)
 	{
 		abort();
 	}
-	caj_out_indent(ctx, !ctx->first);
-	caj_internal_put_string(ctx, key, keysz);
-	ctx->datasink(ctx, ": ", 2);
-	caj_internal_put_string(ctx, val, valsz);
+	ret = caj_out_indent(ctx, !ctx->first);
+	if (ret)
+	{
+		return ret;
+	}
+	ret = caj_internal_put_string(ctx, key, keysz);
+	if (ret)
+	{
+		return ret;
+	}
+	ret = ctx->datasink(ctx, ": ", 2);
+	if (ret)
+	{
+		return ret;
+	}
 	ctx->first = 0;
-	return 0;
+	return caj_internal_put_string(ctx, val, valsz);
 }
 int caj_out_put_string(struct caj_out_ctx *ctx, const char *key, const char *val)
 {
@@ -361,14 +427,19 @@ int caj_out_put_string(struct caj_out_ctx *ctx, const char *key, const char *val
 }
 int caj_out_add2_string(struct caj_out_ctx *ctx, const char *val, size_t valsz)
 {
+	int ret;
 	if (!ctx->veryfirst)
 	{
-		caj_out_indent(ctx, !ctx->first);
+		ret = caj_out_indent(ctx, !ctx->first);
+		if (ret)
+		{
+			return ret;
+		}
 	}
 	ctx->veryfirst = 0;
-	caj_internal_put_string(ctx, val, valsz);
+	ret = caj_internal_put_string(ctx, val, valsz);
 	ctx->first = 0;
-	return 0;
+	return ret;
 }
 int caj_out_add_string(struct caj_out_ctx *ctx, const char *val)
 {
@@ -376,16 +447,28 @@ int caj_out_add_string(struct caj_out_ctx *ctx, const char *val)
 }
 int caj_out_put2_flop(struct caj_out_ctx *ctx, const char *key, size_t keysz, double d)
 {
+	int ret;
 	if (ctx->veryfirst)
 	{
 		abort();
 	}
-	caj_out_indent(ctx, !ctx->first);
-	caj_internal_put_string(ctx, key, keysz);
-	ctx->datasink(ctx, ": ", 2);
-	caj_internal_put_flop(ctx, d);
+	ret = caj_out_indent(ctx, !ctx->first);
+	if (ret)
+	{
+		return ret;
+	}
+	ret = caj_internal_put_string(ctx, key, keysz);
+	if (ret)
+	{
+		return ret;
+	}
+	ret = ctx->datasink(ctx, ": ", 2);
+	if (ret)
+	{
+		return ret;
+	}
 	ctx->first = 0;
-	return 0;
+	return caj_internal_put_flop(ctx, d);
 }
 int caj_out_put_flop(struct caj_out_ctx *ctx, const char *key, double d)
 {
@@ -393,16 +476,28 @@ int caj_out_put_flop(struct caj_out_ctx *ctx, const char *key, double d)
 }
 int caj_out_put2_flop_ex(struct caj_out_ctx *ctx, const char *key, size_t keysz, double d)
 {
+	int ret;
 	if (ctx->veryfirst)
 	{
 		abort();
 	}
-	caj_out_indent(ctx, !ctx->first);
-	caj_internal_put_string(ctx, key, keysz);
-	ctx->datasink(ctx, ": ", 2);
-	caj_internal_put_flop_ex(ctx, d);
+	ret = caj_out_indent(ctx, !ctx->first);
+	if (ret)
+	{
+		return ret;
+	}
+	ret = caj_internal_put_string(ctx, key, keysz);
+	if (ret)
+	{
+		return ret;
+	}
+	ret = ctx->datasink(ctx, ": ", 2);
+	if (ret)
+	{
+		return ret;
+	}
 	ctx->first = 0;
-	return 0;
+	return caj_internal_put_flop_ex(ctx, d);
 }
 int caj_out_put_flop_ex(struct caj_out_ctx *ctx, const char *key, double d)
 {
@@ -410,29 +505,53 @@ int caj_out_put_flop_ex(struct caj_out_ctx *ctx, const char *key, double d)
 }
 int caj_out_put2_number(struct caj_out_ctx *ctx, const char *key, size_t keysz, double d)
 {
+	int ret;
 	if (ctx->veryfirst)
 	{
 		abort();
 	}
-	caj_out_indent(ctx, !ctx->first);
-	caj_internal_put_string(ctx, key, keysz);
-	ctx->datasink(ctx, ": ", 2);
-	caj_internal_put_number(ctx, d);
+	ret = caj_out_indent(ctx, !ctx->first);
+	if (ret)
+	{
+		return ret;
+	}
+	ret = caj_internal_put_string(ctx, key, keysz);
+	if (ret)
+	{
+		return ret;
+	}
+	ret = ctx->datasink(ctx, ": ", 2);
+	if (ret)
+	{
+		return ret;
+	}
 	ctx->first = 0;
-	return 0;
+	return caj_internal_put_number(ctx, d);
 }
 int caj_out_put2_number_ex(struct caj_out_ctx *ctx, const char *key, size_t keysz, double d)
 {
+	int ret;
 	if (ctx->veryfirst)
 	{
 		abort();
 	}
-	caj_out_indent(ctx, !ctx->first);
-	caj_internal_put_string(ctx, key, keysz);
-	ctx->datasink(ctx, ": ", 2);
-	caj_internal_put_number_ex(ctx, d);
+	ret = caj_out_indent(ctx, !ctx->first);
+	if (ret)
+	{
+		return ret;
+	}
+	ret = caj_internal_put_string(ctx, key, keysz);
+	if (ret)
+	{
+		return ret;
+	}
+	ret = ctx->datasink(ctx, ": ", 2);
+	if (ret)
+	{
+		return ret;
+	}
 	ctx->first = 0;
-	return 0;
+	return caj_internal_put_number_ex(ctx, d);
 }
 int caj_out_put_number(struct caj_out_ctx *ctx, const char *key, double d)
 {
@@ -444,16 +563,28 @@ int caj_out_put_number_ex(struct caj_out_ctx *ctx, const char *key, double d)
 }
 int caj_out_put2_i64(struct caj_out_ctx *ctx, const char *key, size_t keysz, int64_t i)
 {
+	int ret;
 	if (ctx->veryfirst)
 	{
 		abort();
 	}
-	caj_out_indent(ctx, !ctx->first);
-	caj_internal_put_string(ctx, key, keysz);
-	ctx->datasink(ctx, ": ", 2);
-	caj_internal_put_i64(ctx, i);
+	ret = caj_out_indent(ctx, !ctx->first);
+	if (ret)
+	{
+		return ret;
+	}
+	ret = caj_internal_put_string(ctx, key, keysz);
+	if (ret)
+	{
+		return ret;
+	}
+	ret = ctx->datasink(ctx, ": ", 2);
+	if (ret)
+	{
+		return ret;
+	}
 	ctx->first = 0;
-	return 0;
+	return caj_internal_put_i64(ctx, i);
 }
 int caj_out_put_i64(struct caj_out_ctx *ctx, const char *key, int64_t i)
 {
@@ -461,77 +592,111 @@ int caj_out_put_i64(struct caj_out_ctx *ctx, const char *key, int64_t i)
 }
 int caj_out_add_flop(struct caj_out_ctx *ctx, double d)
 {
+	int ret;
 	if (!ctx->veryfirst)
 	{
-		caj_out_indent(ctx, !ctx->first);
+		ret = caj_out_indent(ctx, !ctx->first);
+		if (ret)
+		{
+			return ret;
+		}
 	}
 	ctx->veryfirst = 0;
-	caj_internal_put_flop(ctx, d);
+	ret = caj_internal_put_flop(ctx, d);
 	ctx->first = 0;
-	return 0;
+	return ret;
 }
 int caj_out_add_flop_ex(struct caj_out_ctx *ctx, double d)
 {
+	int ret;
 	if (!ctx->veryfirst)
 	{
-		caj_out_indent(ctx, !ctx->first);
+		ret = caj_out_indent(ctx, !ctx->first);
+		if (ret)
+		{
+			return ret;
+		}
 	}
 	ctx->veryfirst = 0;
-	caj_internal_put_flop_ex(ctx, d);
+	ret = caj_internal_put_flop_ex(ctx, d);
 	ctx->first = 0;
-	return 0;
+	return ret;
 }
 int caj_out_add_number(struct caj_out_ctx *ctx, double d)
 {
+	int ret;
 	if (!ctx->veryfirst)
 	{
-		caj_out_indent(ctx, !ctx->first);
+		ret = caj_out_indent(ctx, !ctx->first);
+		if (ret)
+		{
+			return ret;
+		}
 	}
 	ctx->veryfirst = 0;
-	caj_internal_put_number(ctx, d);
+	ret = caj_internal_put_number(ctx, d);
 	ctx->first = 0;
-	return 0;
+	return ret;
 }
 int caj_out_add_number_ex(struct caj_out_ctx *ctx, double d)
 {
+	int ret;
 	if (!ctx->veryfirst)
 	{
-		caj_out_indent(ctx, !ctx->first);
+		ret = caj_out_indent(ctx, !ctx->first);
+		if (ret)
+		{
+			return ret;
+		}
 	}
 	ctx->veryfirst = 0;
-	caj_internal_put_number_ex(ctx, d);
+	ret = caj_internal_put_number_ex(ctx, d);
 	ctx->first = 0;
-	return 0;
+	return ret;
 }
 int caj_out_add_i64(struct caj_out_ctx *ctx, int64_t i)
 {
+	int ret;
 	if (!ctx->veryfirst)
 	{
-		caj_out_indent(ctx, !ctx->first);
+		ret = caj_out_indent(ctx, !ctx->first);
+		if (ret)
+		{
+			return ret;
+		}
 	}
 	ctx->veryfirst = 0;
-	caj_internal_put_i64(ctx, i);
+	ret = caj_internal_put_i64(ctx, i);
 	ctx->first = 0;
-	return 0;
+	return ret;
 }
 int caj_out_put2_boolean(struct caj_out_ctx *ctx, const char *key, size_t keysz, int b)
 {
+	int ret;
 	if (ctx->veryfirst)
 	{
 		abort();
 	}
-	caj_out_indent(ctx, !ctx->first);
-	caj_internal_put_string(ctx, key, keysz);
+	ret = caj_out_indent(ctx, !ctx->first);
+	if (ret)
+	{
+		return ret;
+	}
+	ret = caj_internal_put_string(ctx, key, keysz);
+	if (ret)
+	{
+		return ret;
+	}
 	if (b)
 	{
-		ctx->datasink(ctx, ": true", 6);
+		ret = ctx->datasink(ctx, ": true", 6);
 	}
 	else
 	{
-		ctx->datasink(ctx, ": false", 7);
+		ret = ctx->datasink(ctx, ": false", 7);
 	}
 	ctx->first = 0;
-	return 0;
+	return ret;
 }
 int caj_out_put_boolean(struct caj_out_ctx *ctx, const char *key, int b)
 {
@@ -539,33 +704,46 @@ int caj_out_put_boolean(struct caj_out_ctx *ctx, const char *key, int b)
 }
 int caj_out_add_boolean(struct caj_out_ctx *ctx, int b)
 {
+	int ret;
 	if (!ctx->veryfirst)
 	{
-		caj_out_indent(ctx, !ctx->first);
+		ret = caj_out_indent(ctx, !ctx->first);
+		if (ret)
+		{
+			return ret;
+		}
 	}
 	ctx->veryfirst = 0;
 	if (b)
 	{
-		ctx->datasink(ctx, "true", 4);
+		ret = ctx->datasink(ctx, "true", 4);
 	}
 	else
 	{
-		ctx->datasink(ctx, "false", 5);
+		ret = ctx->datasink(ctx, "false", 5);
 	}
 	ctx->first = 0;
-	return 0;
+	return ret;
 }
 int caj_out_put2_null(struct caj_out_ctx *ctx, const char *key, size_t keysz)
 {
+	int ret;
 	if (ctx->veryfirst)
 	{
 		abort();
 	}
-	caj_out_indent(ctx, !ctx->first);
-	caj_internal_put_string(ctx, key, keysz);
-	ctx->datasink(ctx, ": null", 6);
+	ret = caj_out_indent(ctx, !ctx->first);
+	if (ret)
+	{
+		return ret;
+	}
+	ret = caj_internal_put_string(ctx, key, keysz);
+	if (ret)
+	{
+		return ret;
+	}
 	ctx->first = 0;
-	return 0;
+	return ctx->datasink(ctx, ": null", 6);
 }
 int caj_out_put_null(struct caj_out_ctx *ctx, const char *key)
 {
@@ -573,12 +751,16 @@ int caj_out_put_null(struct caj_out_ctx *ctx, const char *key)
 }
 int caj_out_add_null(struct caj_out_ctx *ctx)
 {
+	int ret;
 	if (!ctx->veryfirst)
 	{
-		caj_out_indent(ctx, !ctx->first);
+		ret = caj_out_indent(ctx, !ctx->first);
+		if (ret)
+		{
+			return ret;
+		}
 	}
 	ctx->veryfirst = 0;
-	ctx->datasink(ctx, "null", 4);
 	ctx->first = 0;
-	return 0;
+	return ctx->datasink(ctx, "null", 4);
 }
