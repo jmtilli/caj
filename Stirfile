@@ -4,7 +4,16 @@
 @fileinclude @ignore "opts.smk"
 
 $CC ?= "cc"
-$CFLAGS ?= ["-g", "-O2", "-Wall", "-Wextra", "-Wsign-conversion", "-Wno-missing-field-initializers", "-Wno-unused-parameter", "-Wshadow", "-Wstrict-prototypes", "-Wmissing-prototypes", "-Wpointer-arith", "-Werror", "-std=gnu11", "-fPIC"]
+
+# -Wstack-protector would be good but it requires -fstack-protector
+# -Wcast-align=strict prevents CONTAINER_OF macro from working
+# -Winline too noisy
+$MYCFLAGS = ["-g", "-O2", "-Wall", "-Wextra", "-Wsign-conversion", "-Wno-missing-field-initializers", "-Wno-unused-parameter", "-Wshadow", "-Wstrict-prototypes", "-Wmissing-prototypes", "-Wpointer-arith", "-Wuninitialized", "-Wconversion", "-Wdeclaration-after-statement", "-Wbad-function-cast", "-Wdangling-else", "-Wold-style-definition", "-Wmissing-declarations", "-Wredundant-decls", "-Wnested-externs", "-Werror", "-std=gnu11", "-fPIC"]
+@if (@strcmp($CC, "clang") != 0)
+  $MYCFLAGS = [@$MYCFLAGS, "-Walloc-zero", "-Wjump-misses-init", "-Wlogical-op", "-Wrestrict"]
+@endif
+$CFLAGS ?= $MYCFLAGS
+
 $CFLAGSINC = ["-Iprettyftoa", "-Istreamingatof"]
 
 $(SRC_LIB) = ["caj.c", "caj_out.c"]
