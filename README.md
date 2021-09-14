@@ -104,7 +104,7 @@ smka
 All of the material related to CAJ is licensed under the following MIT
 license:
 
-Copyright (C) 2020 Juha-Matti Tilli
+Copyright (C) 2020-2021 Juha-Matti Tilli
 
 Copyright (c) 2017-2019 Aalto University
 
