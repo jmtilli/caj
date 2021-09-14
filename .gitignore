@@ -1,6 +1,7 @@
 /.stir.db
 /main
 /outmain
+/fast_json_pp
 /libcaj.a
 *.d
 *.o

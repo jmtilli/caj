@@ -24,7 +24,7 @@ struct cajunfrag_handler_vtable {
 	int (*end_array)(struct cajunfrag_ctx *ctx, const char *key, size_t keysz, struct cajun_node *n);
 	int (*handle_null)(struct cajunfrag_ctx *ctx, const char *key, size_t keysz);
 	int (*handle_string)(struct cajunfrag_ctx *ctx, const char *key, size_t keysz, const char *val, size_t valsz);
-	int (*handle_number)(struct cajunfrag_ctx *ctx, const char *key, size_t keysz, double d);
+	int (*handle_number)(struct cajunfrag_ctx *ctx, const char *key, size_t keysz, double d, int is_integer);
 	int (*handle_boolean)(struct cajunfrag_ctx *ctx, const char *key, size_t keysz, int b);
 };
 
@@ -65,7 +65,7 @@ int cajunfrag_start_array(struct caj_handler *cajh, const char *key, size_t keys
 int cajunfrag_end_array(struct caj_handler *cajh, const char *key, size_t keysz);
 int cajunfrag_handle_null(struct caj_handler *cajh, const char *key, size_t keysz);
 int cajunfrag_handle_string(struct caj_handler *cajh, const char *key, size_t keysz, const char *val, size_t valsz);
-int cajunfrag_handle_number(struct caj_handler *cajh, const char *key, size_t keysz, double d);
+int cajunfrag_handle_number(struct caj_handler *cajh, const char *key, size_t keysz, double d, int is_integer);
 int cajunfrag_handle_boolean(struct caj_handler *cajh, const char *key, size_t keysz, int b);
 
 const struct caj_handler_vtable cajunfrag_vtable;

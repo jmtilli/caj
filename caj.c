@@ -855,12 +855,14 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 		if ((caj->mode == CAJ_MODE_VAL || caj->mode == CAJ_MODE_FIRSTVAL) && (isdigit((unsigned char)data[i]) || data[i] == '-'))
 		{
 			caj->mode = CAJ_MODE_NUMBER;
+			caj->is_integer = 1;
 			streaming_atof_init_strict_json(&caj->streamingatof);
 		}
 		if (caj->mode == CAJ_MODE_NUMBER)
 		{
 			size_t tofeed;
 			ssize_t szret;
+			ssize_t j;
 			tofeed = (size_t)(sz - i);
 			szret = streaming_atof_feed(&caj->streamingatof, &cdata[i], tofeed);
 			if (szret < 0)
@@ -870,6 +872,13 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 			if (szret > sz - i)
 			{
 				abort();
+			}
+			for (j = i; j < i + szret; j++)
+			{
+				if (cdata[j] == '.' || cdata[j] == 'e')
+				{
+					caj->is_integer = 0;
+				}
 			}
 			if (szret < sz - i)
 			{
@@ -902,7 +911,8 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 				ret = caj->handler->vtable->handle_number(
 					caj->handler,
 					caj_get_key(caj), caj_get_keysz(caj),
-					streaming_atof_end(&caj->streamingatof));
+					streaming_atof_end(&caj->streamingatof),
+					caj->is_integer);
 				if (ret != 0)
 				{
 					return ret;
@@ -948,7 +958,8 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 		ret = caj->handler->vtable->handle_number(
 			caj->handler,
 			caj_get_key(caj), caj_get_keysz(caj),
-			streaming_atof_end(&caj->streamingatof));
+			streaming_atof_end(&caj->streamingatof),
+			caj->is_integer);
 		if (ret != 0)
 		{
 			return ret;

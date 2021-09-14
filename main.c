@@ -45,7 +45,7 @@ static int my_handle_string(struct caj_handler *cajh, const char *key, size_t ke
 	printf("%s: %s\n", key, val);
 	return 0;
 }
-static int my_handle_number(struct caj_handler *cajh, const char *key, size_t keysz, double d)
+static int my_handle_number(struct caj_handler *cajh, const char *key, size_t keysz, double d, int is_integer)
 {
 	caj_dump();
 	printf("%s: %g\n", key, d);

@@ -13,7 +13,7 @@ struct caj_handler_vtable {
 	int (*end_array)(struct caj_handler *cajh, const char *key, size_t keysz);
 	int (*handle_null)(struct caj_handler *cajh, const char *key, size_t keysz);
 	int (*handle_string)(struct caj_handler *cajh, const char *key, size_t keysz, const char *val, size_t valsz);
-	int (*handle_number)(struct caj_handler *cajh, const char *key, size_t keysz, double d);
+	int (*handle_number)(struct caj_handler *cajh, const char *key, size_t keysz, double d, int is_integer);
 	int (*handle_boolean)(struct caj_handler *cajh, const char *key, size_t keysz, int b);
 };
 
@@ -62,6 +62,7 @@ struct caj_ctx {
 	size_t valcap;
 	struct caj_handler *handler;
 	struct streaming_atof_ctx streamingatof;
+	int is_integer;
 };
 
 void caj_init(struct caj_ctx *caj, struct caj_handler *handler);

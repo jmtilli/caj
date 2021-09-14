@@ -443,7 +443,7 @@ int cajunfrag_handle_string(struct caj_handler *cajh, const char *key, size_t ke
 	}
 	return 0;
 }
-int cajunfrag_handle_number(struct caj_handler *cajh, const char *key, size_t keysz, double d)
+int cajunfrag_handle_number(struct caj_handler *cajh, const char *key, size_t keysz, double d, int is_integer)
 {
 	struct cajunfrag_ctx *ctx = cajh->userdata;
 	int ret = 0;
@@ -453,7 +453,7 @@ int cajunfrag_handle_number(struct caj_handler *cajh, const char *key, size_t ke
 		ret = 0;
 		if (ctx->handler->handle_number)
 		{
-			ret = ctx->handler->handle_number(ctx, key, keysz, d);
+			ret = ctx->handler->handle_number(ctx, key, keysz, d, is_integer);
 		}
 		return ret;
 	}
@@ -462,7 +462,7 @@ int cajunfrag_handle_number(struct caj_handler *cajh, const char *key, size_t ke
 	{
 		return -ENOMEM;
 	}
-	cajun_number_init(n, d);
+	cajun_number_init(n, d, is_integer);
 	if (ctx->n != NULL)
 	{
 		if (ctx->n->type == CAJUN_DICT)

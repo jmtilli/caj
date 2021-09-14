@@ -17,7 +17,7 @@ $CFLAGS ?= $MYCFLAGS
 $CFLAGSINC = ["-Iprettyftoa", "-Istreamingatof"]
 
 $(SRC_LIB) = ["caj.c", "caj_out.c"]
-$(SRC_PROG) = ["main.c", "outmain.c"]
+$(SRC_PROG) = ["main.c", "outmain.c", "fast_json_pp.c"]
 
 $(SRC) = [@$(SRC_LIB), @$(SRC_PROG)]
 $(OBJ_LIB) = @sufsuball($(SRC_LIB), ".c", ".o")

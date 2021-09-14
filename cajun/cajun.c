@@ -530,7 +530,7 @@ int cajun_handle_string(struct caj_handler *cajh, const char *key, size_t keysz,
 	}
 	return 0;
 }
-int cajun_handle_number(struct caj_handler *cajh, const char *key, size_t keysz, double d)
+int cajun_handle_number(struct caj_handler *cajh, const char *key, size_t keysz, double d, int is_integer)
 {
 	struct cajun_ctx *ctx = cajh->userdata;
 	struct cajun_node *n = cajun_node_new();
@@ -539,7 +539,7 @@ int cajun_handle_number(struct caj_handler *cajh, const char *key, size_t keysz,
 	{
 		return -ENOMEM;
 	}
-	cajun_number_init(n, d);
+	cajun_number_init(n, d, is_integer);
 	if (ctx->nsz > 0)
 	{
 		if (ctx->ns[ctx->nsz-1]->type == CAJUN_DICT)

@@ -43,6 +43,7 @@ struct cajun_node {
 		} string;
 		struct {
 			double d;
+			int is_integer;
 		} number;
 		struct {
 			int b;
@@ -104,11 +105,12 @@ static inline void cajun_array_init(struct cajun_node *n)
 	n->u.array.nodecap = 0;
 }
 
-static inline void cajun_number_init(struct cajun_node *n, double d)
+static inline void cajun_number_init(struct cajun_node *n, double d, int is_integer)
 {
 	cajun_node_init(n);
 	n->type = CAJUN_NUMBER;
 	n->u.number.d = d;
+	n->u.number.is_integer = !!is_integer;
 }
 
 static inline void cajun_boolean_init(struct cajun_node *n, int b)
@@ -211,7 +213,7 @@ int cajun_start_array(struct caj_handler *cajh, const char *key, size_t keysz);
 int cajun_end_array(struct caj_handler *cajh, const char *key, size_t keysz);
 int cajun_handle_null(struct caj_handler *cajh, const char *key, size_t keysz);
 int cajun_handle_string(struct caj_handler *cajh, const char *key, size_t keysz, const char *val, size_t valsz);
-int cajun_handle_number(struct caj_handler *cajh, const char *key, size_t keysz, double d);
+int cajun_handle_number(struct caj_handler *cajh, const char *key, size_t keysz, double d, int is_integer);
 int cajun_handle_boolean(struct caj_handler *cajh, const char *key, size_t keysz, int b);
 
 
