@@ -130,6 +130,7 @@ int main(int argc, char **argv)
 {
 	char buf[2048];
 	size_t numbytes;
+	size_t i;
 	int err;
 	caj_init(&inctx, &myhandler);
 	caj_out_init(&outctx, 1, 1, datasink, NULL);
@@ -143,10 +144,26 @@ int main(int argc, char **argv)
 		err = caj_feed(&inctx, buf, numbytes, 0);
 		if (err == 0)
 		{
-			numbytes = fread(buf, 1, sizeof(buf), stdin);
-			if (numbytes != 0 || !feof(stdin))
+			for (;;)
 			{
-				fprintf(stderr, "Junk at end\n");
+				numbytes = fread(buf, 1, sizeof(buf), stdin);
+				for (i = 0; i < numbytes; i++)
+				{
+					if ((buf[i] != ' ' && buf[i] != '\n' &&
+					     buf[i] != '\r' && buf[i] != '\t'))
+					{
+						fprintf(stderr, "Junk at end\n");
+						return 1;
+					}
+				}
+				if (numbytes == 0)
+				{
+					break;
+				}
+			}
+			if (!feof(stdin))
+			{
+				fprintf(stderr, "Not EOF at end\n");
 				return 1;
 			}
 			caj_free(&inctx);
