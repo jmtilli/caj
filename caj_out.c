@@ -331,7 +331,7 @@ int caj_out_add_start_array(struct caj_out_ctx *ctx)
 	ctx->veryfirst = 0;
 	ctx->first = 1;
 	ctx->curindentlevel++;
-	return ctx->datasink(ctx, "{", 1);
+	return ctx->datasink(ctx, "[", 1);
 }
 int caj_out_end_dict(struct caj_out_ctx *ctx)
 {
