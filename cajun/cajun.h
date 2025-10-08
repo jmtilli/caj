@@ -2185,7 +2185,7 @@ static inline unsigned short cajun_array_get_ushort(struct cajun_node *dict, siz
 	return (unsigned short)n->u.number.d;
 }
 
-const struct caj_handler_vtable cajun_vtable;
+extern const struct caj_handler_vtable cajun_vtable;
 
 void cajun_node_free(struct cajun_node *n);
 

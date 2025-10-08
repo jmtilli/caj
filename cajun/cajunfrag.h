@@ -68,6 +68,6 @@ int cajunfrag_handle_string(struct caj_handler *cajh, const char *key, size_t ke
 int cajunfrag_handle_number(struct caj_handler *cajh, const char *key, size_t keysz, double d, int is_integer);
 int cajunfrag_handle_boolean(struct caj_handler *cajh, const char *key, size_t keysz, int b);
 
-const struct caj_handler_vtable cajunfrag_vtable;
+extern const struct caj_handler_vtable cajunfrag_vtable;
 
 #endif
