@@ -1,4 +1,4 @@
-Copyright (C) 2020 Juha-Matti Tilli
+Copyright (C) 2020-2021,2025,2026 Juha-Matti Tilli
 
 Copyright (c) 2017-2019 Aalto University
 
