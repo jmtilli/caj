@@ -25,7 +25,10 @@ $(OBJ) = @sufsuball($(SRC), ".c", ".o")
 $(DEP) = @sufsuball($(SRC), ".c", ".d")
 $(PROG) = @sufsuball($(SRC_PROG), ".c", "")
 
-@phonyrule: 'all': 'libcaj.a' $(PROG) 'cajun/all' 'prettyftoa/all' 'streamingatof/all'
+$(LDFLAGS_DYN) = []
+$(LN) = "ln"
+
+@phonyrule: 'all': 'libcaj.a' 'libcaj.so' 'libcaj.so.1' $(PROG) 'cajun/all' 'prettyftoa/all' 'streamingatof/all'
 
 @patrule: $(PROG): '%': '%.o' 'libcaj.a' 'prettyftoa/libprettyftoa.a' 'streamingatof/libstreamingatof.a'
 @	[$(CC), @$(CFLAGS), @$(CFLAGSINC), "-o", $@, $<, 'libcaj.a', 'prettyftoa/libprettyftoa.a', 'streamingatof/libstreamingatof.a']
@@ -39,6 +42,12 @@ $(PROG) = @sufsuball($(SRC_PROG), ".c", "")
 'libcaj.a': $(OBJ_LIB)
 @	["rm", "-f", $@]
 @	["ar", "rvs", $@, @@suffilter($^, ".o")]
+
+'libcaj.so.1': 'libcaj.a'
+@	[$(CC), @$(CFLAGS), "-shared", "-o", $@, "-Wl,--whole-archive", @@suffilter($^, ".a"), "-Wl,--no-whole-archive", @$(LDFLAGS_DYN), "-lc"]
+
+'libcaj.so': 'libcaj.so.1'
+@	[$(LN), "-s", $<, $@]
 
 @cdepincludes @autophony @autotarget @ignore [@$(DEP)]
 
