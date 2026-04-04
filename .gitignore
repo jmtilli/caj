@@ -5,3 +5,5 @@
 /libcaj.a
 *.d
 *.o
+/libcaj.so.1
+/pullmain
