@@ -12,7 +12,7 @@ $(PROG) = @sufsuball($(SRC_PROG), ".c", "")
 $(LIBS) = ["../libcaj.a", "../streamingatof/libstreamingatof.a", "../prettyftoa/libprettyftoa.a"]
 $(CFLAGS) = [@$(CFLAGS), "-I../streamingatof"]
 
-@phonyrule: 'all': 'libcajun.a' $(PROG)
+@phonyrule: 'all': 'libcajun.a' 'libcajun.so' 'libcajun.so.1' $(PROG)
 
 @patrule: $(PROG): '%': '%.o' 'libcajun.a' $(LIBS)
 @	[$(CC), @$(CFLAGS), "-o", $@, $<, 'libcajun.a', @$(LIBS)]
@@ -26,5 +26,11 @@ $(CFLAGS) = [@$(CFLAGS), "-I../streamingatof"]
 'libcajun.a': $(OBJ_LIB)
 @	["rm", "-f", $@]
 @	["ar", "rvs", $@, @@suffilter($^, ".o")]
+
+'libcajun.so.1': 'libcajun.a'
+@	[$(CC), @$(CFLAGS), "-shared", "-o", $@, "-Wl,--whole-archive", @@suffilter($^, ".a"), "-Wl,--no-whole-archive", @$(LDFLAGS_DYN), "-lc"]
+
+'libcajun.so': 'libcajun.so.1'
+@	[$(LN), "-s", $<, $@]
 
 @cdepincludes @autophony @autotarget @ignore [@$(DEP)]
