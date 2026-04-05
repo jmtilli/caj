@@ -41,7 +41,7 @@ $(CFLAGS) = [@$(CFLAGS)]
 @	["ar", "rvs", $@, @@suffilter($^, ".o")]
 
 'libcajun.so.1': 'libcajun.a'
-@	[$(CC), @$(CFLAGS), @$(LDFLAGS_DYN), "-shared", "-o", $@, "-Wl,--whole-archive", @@suffilter($^, ".a"), "-Wl,--no-whole-archive", @$(LDFLAGS_DYN), "-lc"]
+@	[$(CC), @$(CFLAGS), @$(LDFLAGS_DYN), "-shared", "-o", $@, "-Wl,--whole-archive", @@suffilter($^, ".a"), "-Wl,--no-whole-archive", @$(LDFLAGS_DYN), "-lc", "-L..", "-lcaj"]
 
 'libcajun.so': 'libcajun.so.1'
 @	["rm", "-f", $@]
