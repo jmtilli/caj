@@ -26,6 +26,7 @@ $(DEP) = @sufsuball($(SRC), ".c", ".d")
 $(PROG) = @sufsuball($(SRC_PROG), ".c", "")
 
 $(LDFLAGS_DYN) = []
+$(RM) = "rm"
 $(LN) = "ln"
 
 @phonyrule: 'all': 'libcaj.a' 'libcaj.so' 'libcaj.so.1' $(PROG) 'cajun/all' 'prettyftoa/all' 'streamingatof/all'
@@ -47,6 +48,7 @@ $(LN) = "ln"
 @	[$(CC), @$(CFLAGS), "-shared", "-o", $@, "-Wl,--whole-archive", @@suffilter($^, ".a"), "-Wl,--no-whole-archive", @$(LDFLAGS_DYN), "-lc"]
 
 'libcaj.so': 'libcaj.so.1'
+@	[$(RM), "-f", $@]
 @	[$(LN), "-s", $<, $@]
 
 @cdepincludes @autophony @autotarget @ignore [@$(DEP)]
