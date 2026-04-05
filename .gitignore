@@ -6,4 +6,8 @@
 *.d
 *.o
 /libcaj.so.1
+/libcaj.so
+/cajun/libcajun.so.1
+/cajun/libcajun.so
 /pullmain
+/opts.smk
