@@ -1830,3 +1830,23 @@ state10:
 	caj->state = 0;
 	return -EINPROGRESS;
 }
+
+struct caj_ctx *caj_new(struct caj_handler *handler)
+{
+	struct caj_ctx *mem = malloc(sizeof(*mem));
+	if (mem == NULL)
+	{
+		return NULL;
+	}
+	caj_init(mem, handler);
+	return mem;
+}
+void caj_delete(struct caj_ctx *caj)
+{
+	if (caj == NULL)
+	{
+		return;
+	}
+	caj_free(caj);
+	free(caj);
+}

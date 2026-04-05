@@ -65,9 +65,13 @@ struct caj_ctx {
 	int is_integer;
 };
 
-void caj_init(struct caj_ctx *caj, struct caj_handler *handler);
+struct caj_ctx *caj_new(struct caj_handler *handler); // caj_delete later
+
+void caj_init(struct caj_ctx *caj, struct caj_handler *handler); // caj_free
 
 void caj_free(struct caj_ctx *caj);
+
+void caj_delete(struct caj_ctx *caj);
 
 int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof);
 
