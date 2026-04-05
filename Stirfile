@@ -3,6 +3,8 @@
 
 @fileinclude @ignore "opts.smk"
 
+$PRETTYFTOA_SUBMODULE ?= @true
+$STREAMINGATOF_SUBMODULE ?= @true
 $CC ?= "cc"
 
 # -Wstack-protector would be good but it requires -fstack-protector
@@ -14,7 +16,7 @@ $MYCFLAGS = ["-g", "-O2", "-Wall", "-Wextra", "-Wsign-conversion", "-Wno-missing
 @endif
 $CFLAGS ?= $MYCFLAGS
 
-$CFLAGSINC = ["-Iprettyftoa", "-Istreamingatof"]
+$CFLAGSINC = ["-I/usr/local/include"]
 
 $(SRC_LIB) = ["caj.c", "caj_out.c"]
 $(SRC_PROG) = ["main.c", "pullmain.c", "outmain.c", "fast_json_pp.c"]
@@ -25,14 +27,38 @@ $(OBJ) = @sufsuball($(SRC), ".c", ".o")
 $(DEP) = @sufsuball($(SRC), ".c", ".d")
 $(PROG) = @sufsuball($(SRC_PROG), ".c", "")
 
-$(LDFLAGS_DYN) = []
+$(LDFLAGS_DYN) = ["-L/usr/local/lib", "-Wl,-rpath,/usr/local/lib"]
 $(RM) = "rm"
 $(LN) = "ln"
 
-@phonyrule: 'all': 'libcaj.a' 'libcaj.so' 'libcaj.so.1' $(PROG) 'cajun/all' 'prettyftoa/all' 'streamingatof/all'
+$(SUBMODULES) = []
+@if ($PRETTYFTOA_SUBMODULE)
+  $(SUBMODULES) += ["prettyftoa/all"]
+  $CFLAGSINC += ["-Iprettyftoa"]
+@endif
+@if ($STREAMINGATOF_SUBMODULE)
+  $(SUBMODULES) += ["streamingatof/all"]
+  $CFLAGSINC += ["-Istreamingatof"]
+@endif
 
-@patrule: $(PROG): '%': '%.o' 'libcaj.a' 'prettyftoa/libprettyftoa.a' 'streamingatof/libstreamingatof.a'
-@	[$(CC), @$(CFLAGS), @$(CFLAGSINC), "-o", $@, $<, 'libcaj.a', 'prettyftoa/libprettyftoa.a', 'streamingatof/libstreamingatof.a']
+$(LIBS) = []
+$(LIBSDYN) = []
+
+@if ($STREAMINGATOF_SUBMODULE)
+  $(LIBS) += ["streamingatof/libstreamingatof.a"]
+@else
+  $(LIBSDYN) += ["-lstreamingatof"]
+@endif
+@if ($PRETTYFTOA_SUBMODULE)
+  $(LIBS) += ["prettyftoa/libprettyftoa.a"]
+@else
+  $(LIBSDYN) += ["-lprettyftoa"]
+@endif
+
+@phonyrule: 'all': 'libcaj.a' 'libcaj.so' 'libcaj.so.1' $(PROG) 'cajun/all' $(SUBMODULES)
+
+@patrule: $(PROG): '%': '%.o' 'libcaj.a' $(LIBS)
+@	[$(CC), @$(CFLAGS), @$(CFLAGSINC), @$(LDFLAGS_DYN), "-o", $@, $<, 'libcaj.a', @$(LIBS), @$(LIBSDYN)]
 
 @patrule: $(OBJ): '%.o': '%.c' '%.d'
 @	[$(CC), @$(CFLAGS), @$(CFLAGSINC), "-c", "-o", $@, $<]
@@ -54,13 +80,17 @@ $(LN) = "ln"
 @cdepincludes @autophony @autotarget @ignore [@$(DEP)]
 
 @dirinclude "cajun"
-@beginholeyscope
+@if ($PRETTYFTOA_SUBMODULE)
+ @beginholeyscope
   $CC = @LP$CC
   $CFLAGS = @LP$CFLAGS
   @projdirinclude "prettyftoa"
-@endscope
-@beginholeyscope
+ @endscope
+@endif
+@if ($STREAMINGATOF_SUBMODULE)
+ @beginholeyscope
   $CC = @LP$CC
   $CFLAGS = @LP$CFLAGS
   @projdirinclude "streamingatof"
-@endscope
+ @endscope
+@endif
