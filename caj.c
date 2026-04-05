@@ -1850,3 +1850,23 @@ void caj_delete(struct caj_ctx *caj)
 	caj_free(caj);
 	free(caj);
 }
+
+struct pullcaj_ctx *pullcaj_new(void)
+{
+	struct pullcaj_ctx *mem = malloc(sizeof(*mem));
+	if (mem == NULL)
+	{
+		return NULL;
+	}
+	pullcaj_init(mem);
+	return mem;
+}
+void pullcaj_delete(struct pullcaj_ctx *pcaj)
+{
+	if (pcaj == NULL)
+	{
+		return;
+	}
+	pullcaj_free(pcaj);
+	free(pcaj);
+}

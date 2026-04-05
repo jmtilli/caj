@@ -130,6 +130,8 @@ struct pullcaj_event_info {
 	} u;
 };
 
+struct pullcaj_ctx *pullcaj_new(void); // pullcaj_delete later
+
 void pullcaj_init(struct pullcaj_ctx *pc);
 
 // buffer needs to be valid until next call to this function is made
@@ -144,5 +146,7 @@ int pullcaj_set_buf(struct pullcaj_ctx *pc, const void *vdata, size_t usz, int e
 int pullcaj_get_event(struct pullcaj_ctx *pc, struct pullcaj_event_info *ev);
 
 void pullcaj_free(struct pullcaj_ctx *pc);
+
+void pullcaj_delete(struct pullcaj_ctx *pc);
 
 #endif
