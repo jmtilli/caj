@@ -560,3 +560,24 @@ void cajunfrag_ctx_free(struct cajunfrag_ctx *ctx)
 	ctx->handler = NULL;
 	ctx->userdata = NULL;
 }
+
+struct cajunfrag_ctx *cajunfrag_ctx_new(const struct cajunfrag_handler_vtable *handler)
+{
+	struct cajunfrag_ctx *ctx = malloc(sizeof(*ctx));
+	if (ctx == NULL)
+	{
+		return NULL;
+	}
+	cajunfrag_ctx_init(ctx, handler);
+	return ctx;
+}
+
+void cajunfrag_ctx_delete(struct cajunfrag_ctx *ctx)
+{
+	if (ctx == NULL)
+	{
+		return;
+	}
+	cajunfrag_ctx_free(ctx);
+	free(ctx);
+}

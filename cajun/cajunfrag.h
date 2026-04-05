@@ -43,6 +43,8 @@ struct cajunfrag_ctx {
 int cajunfrag_ctx_is2(struct cajunfrag_ctx *ctx, size_t cnt, ...);
 int cajunfrag_ctx_is1(struct cajunfrag_ctx *ctx, size_t cnt, ...);
 
+struct cajunfrag_ctx *cajunfrag_ctx_new(const struct cajunfrag_handler_vtable *handler);
+
 static inline void cajunfrag_ctx_init(struct cajunfrag_ctx *ctx, const struct cajunfrag_handler_vtable *handler)
 {
 	ctx->keystack = NULL;
@@ -56,6 +58,8 @@ static inline void cajunfrag_ctx_init(struct cajunfrag_ctx *ctx, const struct ca
 }
 
 void cajunfrag_ctx_free(struct cajunfrag_ctx *ctx);
+
+void cajunfrag_ctx_delete(struct cajunfrag_ctx *ctx);
 
 int cajunfrag_start_fragment_collection(struct cajunfrag_ctx *fragctx);
 
