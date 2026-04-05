@@ -10,7 +10,7 @@ $(OBJ) = @sufsuball($(SRC), ".c", ".o")
 $(DEP) = @sufsuball($(SRC), ".c", ".d")
 $(PROG) = @sufsuball($(SRC_PROG), ".c", "")
 $(LIBS) = ["../libcaj.a"]
-$(LIBSDYN) = []
+$(LIBSDYN) = ["-lm"]
 $(CFLAGS) = [@$(CFLAGS)]
 
 @if ($STREAMINGATOF_SUBMODULE)
@@ -41,7 +41,7 @@ $(CFLAGS) = [@$(CFLAGS)]
 @	["ar", "rvs", $@, @@suffilter($^, ".o")]
 
 'libcajun.so.1': 'libcajun.a' '../libcaj.so'
-@	[$(CC), @$(CFLAGS), @$(LDFLAGS_DYN), "-shared", "-o", $@, "-Wl,--whole-archive", @@suffilter($^, ".a"), "-Wl,--no-whole-archive", @$(LDFLAGS_DYN), "-lc", "-L..", "-lcaj"]
+@	[$(CC), @$(CFLAGS), @$(LDFLAGS_DYN), "-shared", "-o", $@, "-Wl,--whole-archive", @@suffilter($^, ".a"), "-Wl,--no-whole-archive", @$(LDFLAGS_DYN), "-lc", "-lm", "-L..", "-lcaj"]
 
 'libcajun.so': 'libcajun.so.1'
 @	["rm", "-f", $@]
