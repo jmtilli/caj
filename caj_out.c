@@ -739,3 +739,26 @@ int caj_out_add_null(struct caj_out_ctx *ctx)
 	ctx->first = 0;
 	return ctx->datasink(ctx, "null", 4);
 }
+
+struct caj_out_ctx *caj_out_new(int tabs, size_t indentamount,
+                                int (*datasink)(struct caj_out_ctx *ctx, const char *data, size_t sz),
+                                void *userdata)
+{
+	struct caj_out_ctx *ctx = malloc(sizeof(*ctx));
+	if (ctx == NULL)
+	{
+		return NULL;
+	}
+	caj_out_init(ctx, tabs, indentamount, datasink, userdata);
+	return ctx;
+}
+
+
+void caj_out_delete(struct caj_out_ctx *ctx)
+{
+	if (ctx == NULL)
+	{
+		return;
+	}
+	free(ctx);
+}

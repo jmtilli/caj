@@ -53,4 +53,11 @@ void caj_out_init(struct caj_out_ctx *ctx, int tabs, size_t indentamount,
                   int (*datasink)(struct caj_out_ctx *ctx, const char *data, size_t sz),
 		  void *userdata);
 
+struct caj_out_ctx *caj_out_new(int tabs, size_t indentamount,
+                                int (*datasink)(struct caj_out_ctx *ctx, const char *data, size_t sz),
+                                void *userdata);
+
+
+void caj_out_delete(struct caj_out_ctx *ctx);
+
 #endif
