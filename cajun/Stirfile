@@ -31,6 +31,7 @@ $(CFLAGS) = [@$(CFLAGS), "-I../streamingatof"]
 @	[$(CC), @$(CFLAGS), "-shared", "-o", $@, "-Wl,--whole-archive", @@suffilter($^, ".a"), "-Wl,--no-whole-archive", @$(LDFLAGS_DYN), "-lc"]
 
 'libcajun.so': 'libcajun.so.1'
+@	["rm", "-f", $@]
 @	[$(LN), "-s", $<, $@]
 
 @cdepincludes @autophony @autotarget @ignore [@$(DEP)]
