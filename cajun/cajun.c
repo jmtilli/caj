@@ -732,6 +732,15 @@ struct cajun_ctx *cajun_ctx_new(void)
 	cajun_ctx_init(ctx);
 	return ctx;
 }
+void cajun_node_delete(struct cajun_node *n)
+{
+	if (n == NULL)
+	{
+		return;
+	}
+	cajun_node_free(n);
+	free(n);
+}
 void cajun_ctx_delete(struct cajun_ctx *ctx)
 {
 	if (ctx == NULL)

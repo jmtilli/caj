@@ -72,6 +72,7 @@ static inline struct cajun_node *cajun_node_new(void)
 	cajun_node_init(result);
 	return result;
 }
+void cajun_node_delete(struct cajun_node *n);
 
 static inline void cajun_null_init(struct cajun_node *n)
 {
