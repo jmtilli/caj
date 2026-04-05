@@ -211,8 +211,9 @@ void cajun_node_out(struct caj_out_ctx *ctx, struct cajun_node *n)
 	cajun_node_out_nonrecursive(ctx, n);
 }
 
-int cajun_node_cmp_asym(struct caj_string_plus_len *a, struct caj_rb_tree_node *b, void *ud)
+int cajun_node_cmp_asym(const void *va, struct caj_rb_tree_node *b, void *ud)
 {
+	const struct caj_string_plus_len *a = va;
 	struct cajun_node *n_b = CAJ_CONTAINER_OF(b, struct cajun_node, node);
 	size_t s_a = a->len;
 	size_t s_b = n_b->keysz;
@@ -272,7 +273,7 @@ struct cajun_node *cajun_dict_get(struct cajun_node *n, const char *key, size_t 
 	{
 		abort();
 	}
-	rn = CAJ_RB_TREE_NOCMP_FIND(&n->u.dict.heads[hashloc], cajun_node_cmp_asym, NULL, &stringlen);
+	rn = caj_rb_tree_nocmp_find_asym(&n->u.dict.heads[hashloc], cajun_node_cmp_asym, NULL, &stringlen);
 	if (rn == NULL)
 	{
 		return NULL;
@@ -292,7 +293,7 @@ int cajun_dict_add(struct cajun_node *parent, const char *key, size_t keysz, str
 	{
 		abort();
 	}
-	rn = CAJ_RB_TREE_NOCMP_FIND(&parent->u.dict.heads[hashloc], cajun_node_cmp_asym, NULL, &stringlen);
+	rn = caj_rb_tree_nocmp_find_asym(&parent->u.dict.heads[hashloc], cajun_node_cmp_asym, NULL, &stringlen);
 	if (rn != NULL)
 	{
 		return -EEXIST;

@@ -147,7 +147,7 @@ struct caj_string_plus_len
 	size_t len;
 };
 
-int cajun_node_cmp_asym(struct caj_string_plus_len *a, struct caj_rb_tree_node *b, void *ud);
+int cajun_node_cmp_asym(const void *va, struct caj_rb_tree_node *b, void *ud);
 
 int cajun_node_cmp(struct caj_rb_tree_node *a, struct caj_rb_tree_node *b, void *ud);
 

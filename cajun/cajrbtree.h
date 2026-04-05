@@ -16,6 +16,7 @@ struct caj_rb_tree_node {
 };
 
 typedef int (*caj_rb_tree_cmp)(struct caj_rb_tree_node *a, struct caj_rb_tree_node *b, void *ud);
+typedef int (*caj_rb_tree_cmp_asym)(const void *a, struct caj_rb_tree_node *b, void *ud);
 
 struct caj_rb_tree_nocmp {
   struct caj_rb_tree_node *root;
@@ -86,6 +87,7 @@ static inline void caj_rb_tree_delete(struct caj_rb_tree *tree, struct caj_rb_tr
   caj_rb_tree_nocmp_delete(&tree->nocmp, node);
 }
 
+#if 0
 #define CAJ_RB_TREE_NOCMP_FIND(tree, cmp, cmp_userdata, tofind) \
   ({ \
     const struct caj_rb_tree_nocmp *__caj_rb_tree_find_tree = (tree); \
@@ -109,6 +111,7 @@ static inline void caj_rb_tree_delete(struct caj_rb_tree *tree, struct caj_rb_tr
     } \
     __caj_rb_tree_find_node; \
   })
+#endif
 
 /*
  * NB: this is slower than the macro version
@@ -136,6 +139,31 @@ static inline struct caj_rb_tree_node *caj_rb_tree_nocmp_find(
   }
   return node;
 }
+
+static inline struct caj_rb_tree_node *caj_rb_tree_nocmp_find_asym(
+  const struct caj_rb_tree_nocmp *tree, caj_rb_tree_cmp_asym cmp, void *cmp_userdata,
+  const void *tofind)
+{
+  struct caj_rb_tree_node *node = tree->root;
+  while (node != NULL)
+  {
+    int res = cmp(tofind, node, cmp_userdata);
+    if (res < 0)
+    {
+      node = node->left;
+    }
+    else if (res > 0)
+    {
+      node = node->right;
+    }
+    else
+    {
+      break;
+    }
+  }
+  return node;
+}
+
 
 static inline int caj_rb_tree_nocmp_insert_nonexist(
   struct caj_rb_tree_nocmp *tree, caj_rb_tree_cmp cmp, void *cmp_userdata,
@@ -188,6 +216,7 @@ static inline int caj_rb_tree_nocmp_insert_nonexist(
   return finalres;
 }
 
+#if 0
 /*
  * NB: this is slower than the non-macro version
  */
@@ -246,6 +275,7 @@ static inline int caj_rb_tree_nocmp_insert_nonexist(
     } \
     __caj_rb_tree_insert_finalres; \
   })
+#endif
 
 #ifdef __cplusplus
 };
