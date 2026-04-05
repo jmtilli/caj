@@ -721,3 +721,23 @@ const struct caj_handler_vtable cajun_vtable = {
 	.handle_number = cajun_handle_number,
 	.handle_boolean = cajun_handle_boolean,
 };
+
+struct cajun_ctx *cajun_ctx_new(void)
+{
+	struct cajun_ctx *ctx = malloc(sizeof(*ctx));
+	if (ctx == NULL)
+	{
+		return NULL;
+	}
+	cajun_ctx_init(ctx);
+	return ctx;
+}
+void cajun_ctx_delete(struct cajun_ctx *ctx)
+{
+	if (ctx == NULL)
+	{
+		return;
+	}
+	cajun_ctx_free(ctx);
+	free(ctx);
+}

@@ -199,6 +199,9 @@ struct cajun_ctx {
 	size_t ncap;
 };
 
+struct cajun_ctx *cajun_ctx_new(void);
+void cajun_ctx_delete(struct cajun_ctx *ctx);
+
 static inline void cajun_ctx_init(struct cajun_ctx *ctx)
 {
 	ctx->n = NULL;
