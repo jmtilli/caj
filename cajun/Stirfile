@@ -40,7 +40,7 @@ $(CFLAGS) = [@$(CFLAGS)]
 @	["rm", "-f", $@]
 @	["ar", "rvs", $@, @@suffilter($^, ".o")]
 
-'libcajun.so.1': 'libcajun.a'
+'libcajun.so.1': 'libcajun.a' '../libcaj.so'
 @	[$(CC), @$(CFLAGS), @$(LDFLAGS_DYN), "-shared", "-o", $@, "-Wl,--whole-archive", @@suffilter($^, ".a"), "-Wl,--no-whole-archive", @$(LDFLAGS_DYN), "-lc", "-L..", "-lcaj"]
 
 'libcajun.so': 'libcajun.so.1'
