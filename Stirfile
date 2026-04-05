@@ -42,7 +42,7 @@ $(SUBMODULES) = []
 @endif
 
 $(LIBS) = []
-$(LIBSDYN) = []
+$(LIBSDYN) = ["-lm"]
 
 @if ($STREAMINGATOF_SUBMODULE)
   $(LIBS) += ["streamingatof/libstreamingatof.a"]
@@ -71,7 +71,7 @@ $(LIBSDYN) = []
 @	["ar", "rvs", $@, @@suffilter($^, ".o")]
 
 'libcaj.so.1': 'libcaj.a'
-@	[$(CC), @$(CFLAGS), "-shared", "-o", $@, "-Wl,--whole-archive", @@suffilter($^, ".a"), "-Wl,--no-whole-archive", @$(LDFLAGS_DYN), "-lc", @$(LIBSDYN)]
+@	[$(CC), @$(CFLAGS), "-shared", "-o", $@, "-Wl,--whole-archive", @@suffilter($^, ".a"), "-Wl,--no-whole-archive", @$(LDFLAGS_DYN), "-lm", "-lc", @$(LIBSDYN)]
 
 'libcaj.so': 'libcaj.so.1'
 @	[$(RM), "-f", $@]
