@@ -113,7 +113,7 @@ struct caj_handler_vtable myhandler_vtable = {
 };
 
 struct caj_ctx inctx;
-struct caj_out_ctx outctx = {};
+struct caj_out_ctx outctx;
 
 struct caj_handler myhandler = {
 	.vtable = &myhandler_vtable,
