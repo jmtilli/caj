@@ -59,6 +59,11 @@ preserve the order.
 CAJUN offers a rich function set allowing querying the data from the parse
 tree.
 
+Unlike other tree-based JSON parser libraries, CAJUN is nonrecursive. None of
+the algorithms do stack recursion: not the parsing, not the serialization to
+JSON, not memory-freeing. This is an important feature, as parsing megabytes of
+JSON from an untrusted source could otherwise cause a stack overflow.
+
 ## C API for JSON union fragment (CAJUNfrag): a combined event-based/tree-based parser for JSON in C language
 
 CAJUNfrag is an event-driven parser that allows at any point of parsing
