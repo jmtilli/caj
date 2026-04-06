@@ -55,7 +55,6 @@ static void outtest2(void)
 	{
 		printf("Out of memory\n");
 		cajun_node_delete(n);
-		cajun_node_delete(n2);
 		return;
 	}
 	if (cajun_array_add(n2, n3) != 0)
@@ -70,7 +69,6 @@ static void outtest2(void)
 	{
 		printf("Out of memory\n");
 		cajun_node_delete(n);
-		cajun_node_delete(n2);
 		return;
 	}
 	if (cajun_array_add(n2, n3) != 0)
