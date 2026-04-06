@@ -62,7 +62,10 @@ tree.
 Unlike other tree-based JSON parser libraries, CAJUN is nonrecursive. None of
 the algorithms do stack recursion: not the parsing, not the serialization to
 JSON, not memory-freeing. This is an important feature, as parsing megabytes of
-JSON from an untrusted source could otherwise cause a stack overflow.
+JSON from an untrusted source could otherwise cause a stack overflow. For
+example, the popular JSON library, json-c, is stack recursive and the authors
+fear stack overflow so much that the maximum parsing depth is restricted to 32.
+This is an arbitrary restriction that could hit many real-life use cases.
 
 ## C API for JSON union fragment (CAJUNfrag): a combined event-based/tree-based parser for JSON in C language
 
