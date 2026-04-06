@@ -6,6 +6,8 @@
 #include <math.h>
 #include <string.h>
 
+typedef ptrdiff_t myssize_t;
+
 void caj_init(struct caj_ctx *caj, struct caj_handler *handler)
 {
 	memset(caj, 0, sizeof(*caj));
@@ -354,8 +356,8 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 {
 	const unsigned char *data = (const unsigned char*)vdata;
 	const char *cdata = (const char*)vdata;
-	ssize_t sz = (ssize_t)usz;
-	ssize_t i;
+	myssize_t sz = (myssize_t)usz;
+	myssize_t i;
 	int ret;
 	if (sz < 0 || (size_t)sz != usz)
 	{
@@ -1036,8 +1038,8 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 		if (caj->mode == CAJ_MODE_NUMBER)
 		{
 			size_t tofeed;
-			ssize_t szret;
-			ssize_t j;
+			myssize_t szret;
+			myssize_t j;
 			tofeed = (size_t)(sz - i);
 			szret = streaming_atof_feed(&caj->streamingatof, &cdata[i], tofeed);
 			if (szret < 0)
@@ -1150,7 +1152,7 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 
 int pullcaj_set_buf(struct pullcaj_ctx *pc, const void *vdata, size_t usz, int eof)
 {
-	ssize_t sz = (ssize_t)usz;
+	myssize_t sz = (myssize_t)usz;
 	if (vdata == NULL && usz > 0)
 	{
 		return -EFAULT;
@@ -1748,26 +1750,26 @@ state8:
 		if (caj->mode == CAJ_MODE_NUMBER)
 		{
 			size_t tofeed;
-			ssize_t szret;
-			ssize_t j;
+			myssize_t szret;
+			myssize_t j;
 			tofeed = (size_t)(caj->usz - caj->i);
 			szret = streaming_atof_feed(&caj->streamingatof, &cdata[caj->i], tofeed);
 			if (szret < 0)
 			{
 				return -EINVAL;
 			}
-			if (szret > (ssize_t)(caj->usz - caj->i))
+			if (szret > (myssize_t)(caj->usz - caj->i))
 			{
 				abort();
 			}
-			for (j = (ssize_t)caj->i; j < (ssize_t)caj->i + szret; j++)
+			for (j = (myssize_t)caj->i; j < (myssize_t)caj->i + szret; j++)
 			{
 				if (cdata[j] == '.' || cdata[j] == 'e')
 				{
 					caj->is_integer = 0;
 				}
 			}
-			if (szret < (ssize_t)(caj->usz - caj->i))
+			if (szret < (myssize_t)(caj->usz - caj->i))
 			{
 				caj->mode = CAJ_MODE_COMMA;
 				if (streaming_atof_is_error(&caj->streamingatof))
