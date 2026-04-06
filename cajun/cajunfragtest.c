@@ -49,7 +49,7 @@ int main(int argc, char **argv)
 "}\n";
 	int ret;
 
-	ret = cajunfrag_parse(data, strlen(data), &my_vtable);
+	ret = cajunfrag_parse(data, strlen(data), &my_vtable, NULL);
 	if (ret != 0)
 	{
 		printf("Parser error\n");

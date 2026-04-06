@@ -75,6 +75,7 @@ int cajunfrag_handle_boolean(struct caj_handler *cajh, const char *key, size_t k
 extern const struct caj_handler_vtable cajunfrag_vtable;
 
 int cajunfrag_parse(const char *data, size_t sz,
-                    const struct cajunfrag_handler_vtable *my_vtable);
+                    const struct cajunfrag_handler_vtable *my_vtable,
+                    void *userdata);
 
 #endif
