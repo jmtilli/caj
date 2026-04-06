@@ -44,7 +44,7 @@ Also, the CAJ\_out library supports three variants of outputting numbers. One
 variant outputs integers. Another variant outputs floating point numbers that
 are always represented in the most compact form they can be represented, but
 with always a decimal separator or exponent so that they can be identified as
-flaoting point numbers rather than integers. The third variant outputs an
+floating point numbers rather than integers. The third variant outputs an
 arbitrary number and automatically makes the choice between integer and
 floating point format (numbers that are exact integers of at most 48 bits are
 always represented without any floating point formatting).
