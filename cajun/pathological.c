@@ -15,6 +15,11 @@ int main(int argc, char **argv)
 	size_t x;
 	char *pathological = malloc(2*1024*1024+1);
 	struct cajun_node *n;
+	if (pathological == NULL)
+	{
+		printf("Out of memory\n");
+		return 1;
+	}
 	caj_out_init(&outctx, 0, 0, datasink, NULL);
 	for (x = 0; x < 1024*1024; x++)
 	{
@@ -34,5 +39,6 @@ int main(int argc, char **argv)
 	cajun_node_out(&outctx, n);
 	printf("\n");
 	cajun_node_delete(n);
+	free(pathological);
 	return 0;
 }
