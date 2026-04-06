@@ -2206,4 +2206,6 @@ static inline void cajun_ctx_free(struct cajun_ctx *ctx)
 	ctx->ncap = 0;
 }
 
+struct cajun_node *cajun_node_parse(const char *data, size_t sz);
+
 #endif

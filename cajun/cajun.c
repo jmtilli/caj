@@ -750,3 +750,35 @@ void cajun_ctx_delete(struct cajun_ctx *ctx)
 	cajun_ctx_free(ctx);
 	free(ctx);
 }
+
+struct cajun_node *cajun_node_parse(const char *data, size_t sz)
+{
+	struct caj_ctx caj;
+	struct cajun_ctx cajun;
+	struct caj_handler myhandler = {
+		.userdata = &cajun,
+		.vtable = &cajun_vtable,
+	};
+	struct cajun_node *res;
+	int ret;
+
+	caj_init(&caj, &myhandler);
+	cajun_ctx_init(&cajun);
+	ret = caj_feed(&caj, data, sz, 1);
+	if (ret != 0)
+	{
+		if (cajun.n)
+		{
+			cajun_node_delete(cajun.n);
+			cajun.n = NULL;
+		}
+		cajun_ctx_free(&cajun);
+		caj_free(&caj);
+		return NULL;
+	}
+	res = cajun.n;
+	cajun.n = NULL;
+	cajun_ctx_free(&cajun);
+	caj_free(&caj);
+	return res;
+}

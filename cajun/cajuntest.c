@@ -12,30 +12,20 @@ static int datasink(struct caj_out_ctx *ctx, const char *data, size_t sz)
 int main(int argc, char **argv)
 {
 	struct caj_out_ctx outctx;
-	struct caj_ctx caj;
-	struct cajun_ctx cajun;
-	struct caj_handler myhandler = {
-		.userdata = &cajun,
-		.vtable = &cajun_vtable,
-	};
 	char *data = " {   \"foo\": [1, 2, 3], \"bar\": 4, \"baz\": {}, \"barf\": []   , \"quux\": [true, false, null]  }";
-	int ret;
 	uint8_t u8;
 	struct cajun_node *n;
 	struct cajun_node *ar1, *ar2, *ar3, *dict;
 
 	// FIXME freeing on parse error
 	caj_out_init(&outctx, 0, 4, datasink, NULL);
-	caj_init(&caj, &myhandler);
-	cajun_ctx_init(&cajun);
-	ret = caj_feed(&caj, data, strlen(data), 1);
-	if (ret != 0)
+
+	n = cajun_node_parse(data, strlen(data));
+	if (n == NULL)
 	{
-		printf("ret %d\n", ret);
+		printf("Parser error\n");
 		return 1;
 	}
-
-	n = cajun.n;
 
 	ar1 = cajun_dict_get_array_not_null(n, "foo");
 	u8 = cajun_dict_get_uint8_not_null(n, "bar");
@@ -90,9 +80,6 @@ int main(int argc, char **argv)
 	cajun_node_out(&outctx, n);
 	printf("\n");
 
-	cajun_node_delete(cajun.n);
-	cajun.n = NULL;
-	cajun_ctx_free(&cajun);
-	caj_free(&caj);
+	cajun_node_delete(n);
 	return 0;
 }
