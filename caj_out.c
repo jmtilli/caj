@@ -2,6 +2,7 @@
 #include "prettyftoa.h"
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <math.h>
 
@@ -60,8 +61,20 @@ static int caj_out_indent(struct caj_out_ctx *ctx, int comma)
 		indentchars++;
 		off--;
 	}
+	if (ctx->indentamount == SIZE_MAX)
+	{
+		if (comma)
+		{
+			return ctx->datasink(ctx, ",", 1);
+		}
+		return 0;
+	}
 	if (toindent == 0)
 	{
+		if (comma)
+		{
+			return ctx->datasink(ctx, ",\n", 2);
+		}
 		return ctx->datasink(ctx, "\n", 1);
 	}
 	while (toindent > 0)
@@ -270,7 +283,14 @@ int caj_out_put2_start_dict(struct caj_out_ctx *ctx, const char *key, size_t key
 	}
 	ctx->first = 1;
 	ctx->curindentlevel++;
-	return ctx->datasink(ctx, ": {", 3);
+	if (ctx->indentamount == SIZE_MAX)
+	{
+		return ctx->datasink(ctx, ":{", 2);
+	}
+	else
+	{
+		return ctx->datasink(ctx, ": {", 3);
+	}
 }
 int caj_out_put_start_dict(struct caj_out_ctx *ctx, const char *key)
 {
@@ -295,7 +315,14 @@ int caj_out_put2_start_array(struct caj_out_ctx *ctx, const char *key, size_t ke
 	}
 	ctx->first = 1;
 	ctx->curindentlevel++;
-	return ctx->datasink(ctx, ": [", 3);
+	if (ctx->indentamount == SIZE_MAX)
+	{
+		return ctx->datasink(ctx, ":[", 2);
+	}
+	else
+	{
+		return ctx->datasink(ctx, ": [", 3);
+	}
 }
 int caj_out_put_start_array(struct caj_out_ctx *ctx, const char *key)
 {
@@ -388,7 +415,14 @@ int caj_out_put22_string(struct caj_out_ctx *ctx, const char *key, size_t keysz,
 	{
 		return ret;
 	}
-	ret = ctx->datasink(ctx, ": ", 2);
+	if (ctx->indentamount == SIZE_MAX)
+	{
+		ret = ctx->datasink(ctx, ":", 1);
+	}
+	else
+	{
+		ret = ctx->datasink(ctx, ": ", 2);
+	}
 	if (ret)
 	{
 		return ret;
@@ -437,7 +471,14 @@ int caj_out_put2_flop(struct caj_out_ctx *ctx, const char *key, size_t keysz, do
 	{
 		return ret;
 	}
-	ret = ctx->datasink(ctx, ": ", 2);
+	if (ctx->indentamount == SIZE_MAX)
+	{
+		ret = ctx->datasink(ctx, ":", 1);
+	}
+	else
+	{
+		ret = ctx->datasink(ctx, ": ", 2);
+	}
 	if (ret)
 	{
 		return ret;
@@ -466,7 +507,14 @@ int caj_out_put2_flop_ex(struct caj_out_ctx *ctx, const char *key, size_t keysz,
 	{
 		return ret;
 	}
-	ret = ctx->datasink(ctx, ": ", 2);
+	if (ctx->indentamount == SIZE_MAX)
+	{
+		ret = ctx->datasink(ctx, ":", 1);
+	}
+	else
+	{
+		ret = ctx->datasink(ctx, ": ", 2);
+	}
 	if (ret)
 	{
 		return ret;
@@ -495,7 +543,14 @@ int caj_out_put2_number(struct caj_out_ctx *ctx, const char *key, size_t keysz, 
 	{
 		return ret;
 	}
-	ret = ctx->datasink(ctx, ": ", 2);
+	if (ctx->indentamount == SIZE_MAX)
+	{
+		ret = ctx->datasink(ctx, ":", 1);
+	}
+	else
+	{
+		ret = ctx->datasink(ctx, ": ", 2);
+	}
 	if (ret)
 	{
 		return ret;
@@ -520,7 +575,14 @@ int caj_out_put2_number_ex(struct caj_out_ctx *ctx, const char *key, size_t keys
 	{
 		return ret;
 	}
-	ret = ctx->datasink(ctx, ": ", 2);
+	if (ctx->indentamount == SIZE_MAX)
+	{
+		ret = ctx->datasink(ctx, ":", 1);
+	}
+	else
+	{
+		ret = ctx->datasink(ctx, ": ", 2);
+	}
 	if (ret)
 	{
 		return ret;
@@ -553,7 +615,14 @@ int caj_out_put2_i64(struct caj_out_ctx *ctx, const char *key, size_t keysz, int
 	{
 		return ret;
 	}
-	ret = ctx->datasink(ctx, ": ", 2);
+	if (ctx->indentamount == SIZE_MAX)
+	{
+		ret = ctx->datasink(ctx, ":", 1);
+	}
+	else
+	{
+		ret = ctx->datasink(ctx, ": ", 2);
+	}
 	if (ret)
 	{
 		return ret;

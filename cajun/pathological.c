@@ -20,7 +20,7 @@ int main(int argc, char **argv)
 		printf("Out of memory\n");
 		return 1;
 	}
-	caj_out_init(&outctx, 0, 0, datasink, NULL);
+	caj_out_init(&outctx, 0, SIZE_MAX, datasink, NULL);
 	for (x = 0; x < 1024*1024; x++)
 	{
 		pathological[x] = '[';
