@@ -30,12 +30,6 @@ const struct cajunfrag_handler_vtable my_vtable = {
 
 int main(int argc, char **argv)
 {
-	struct caj_ctx caj;
-	struct cajunfrag_ctx fragctx;
-	struct caj_handler myhandler = {
-		.userdata = &fragctx,
-		.vtable = &cajunfrag_vtable,
-	};
 	char *data = 
 "{\n"
 "        \"customers\": [\n"
@@ -55,19 +49,11 @@ int main(int argc, char **argv)
 "}\n";
 	int ret;
 
-	// FIXME freeing on parse error
-	cajunfrag_ctx_init(&fragctx, &my_vtable);
-	caj_init(&caj, &myhandler);
-	ret = caj_feed(&caj, data, strlen(data), 1);
+	ret = cajunfrag_parse(data, strlen(data), &my_vtable);
 	if (ret != 0)
 	{
-		printf("ret %d\n", ret);
-		caj_free(&caj);
-		cajunfrag_ctx_free(&fragctx);
+		printf("Parser error\n");
 		return 1;
 	}
-
-	caj_free(&caj);
-	cajunfrag_ctx_free(&fragctx);
 	return 0;
 }

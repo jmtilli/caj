@@ -581,3 +581,28 @@ void cajunfrag_ctx_delete(struct cajunfrag_ctx *ctx)
 	cajunfrag_ctx_free(ctx);
 	free(ctx);
 }
+
+int cajunfrag_parse(const char *data, size_t sz,
+                    const struct cajunfrag_handler_vtable *my_vtable)
+{
+	struct caj_ctx caj;
+	struct cajunfrag_ctx fragctx;
+	struct caj_handler myhandler = {
+		.userdata = &fragctx,
+		.vtable = &cajunfrag_vtable,
+	};
+	int ret;
+
+	cajunfrag_ctx_init(&fragctx, my_vtable);
+	caj_init(&caj, &myhandler);
+	ret = caj_feed(&caj, data, sz, 1);
+	if (ret != 0)
+	{
+		caj_free(&caj);
+		cajunfrag_ctx_free(&fragctx);
+		return ret;
+	}
+	caj_free(&caj);
+	cajunfrag_ctx_free(&fragctx);
+	return 0;
+}
