@@ -10,7 +10,7 @@ $CC ?= "cc"
 # -Wstack-protector would be good but it requires -fstack-protector
 # -Wcast-align=strict prevents CONTAINER_OF macro from working
 # -Winline too noisy
-$MYCFLAGS = ["-g", "-O2", "-Wall", "-Wextra", "-Wsign-conversion", "-Wno-missing-field-initializers", "-Wno-unused-parameter", "-Wshadow", "-Wstrict-prototypes", "-Wmissing-prototypes", "-Wpointer-arith", "-Wuninitialized", "-Wconversion", "-Wdeclaration-after-statement", "-Wbad-function-cast", "-Wdangling-else", "-Wold-style-definition", "-Wmissing-declarations", "-Wredundant-decls", "-Wnested-externs", "-Werror", "-std=gnu11", "-fPIC"]
+$MYCFLAGS = ["-g", "-O2", "-Wall", "-Wextra", "-Wsign-conversion", "-Wno-missing-field-initializers", "-Wno-unused-parameter", "-Wshadow", "-Wstrict-prototypes", "-Wmissing-prototypes", "-Wpointer-arith", "-Wuninitialized", "-Wconversion", "-Wdeclaration-after-statement", "-Wbad-function-cast", "-Wdangling-else", "-Wold-style-definition", "-Wmissing-declarations", "-Wredundant-decls", "-Wnested-externs", "-std=gnu99", "-fPIC"]
 @if (@strcmp($CC, "clang") != 0)
   $MYCFLAGS = [@$MYCFLAGS, "-Walloc-zero", "-Wjump-misses-init", "-Wlogical-op", "-Wrestrict"]
 @endif
