@@ -9,6 +9,180 @@ static int datasink(struct caj_out_ctx *ctx, const char *data, size_t sz)
 	return 0;
 }
 
+static void outtest2(void)
+{
+	struct caj_out_ctx outctx;
+	struct cajun_node *n;
+	struct cajun_node *n2;
+	struct cajun_node *n3;
+	caj_out_init(&outctx, 0, 4, datasink, NULL);
+	n = cajun_dict_new();
+	if (n == NULL)
+	{
+		printf("Out of memory\n");
+		return;
+	}
+	n2 = cajun_array_new();
+	if (n2 == NULL)
+	{
+		printf("Out of memory\n");
+		cajun_node_delete(n);
+		return;
+	}
+	if (cajun_dict_add(n, "foo", strlen("foo"), n2) != 0)
+	{
+		printf("Out of memory or duplicate key\n");
+		cajun_node_delete(n);
+		cajun_node_delete(n2);
+		return;
+	}
+	n3 = cajun_number_new(1, 1);
+	if (n3 == NULL)
+	{
+		printf("Out of memory\n");
+		cajun_node_delete(n);
+		return;
+	}
+	if (cajun_array_add(n2, n3) != 0)
+	{
+		printf("Out of memory\n");
+		cajun_node_delete(n);
+		cajun_node_delete(n3);
+		return;
+	}
+	n3 = cajun_number_new(2, 1);
+	if (n3 == NULL)
+	{
+		printf("Out of memory\n");
+		cajun_node_delete(n);
+		cajun_node_delete(n2);
+		return;
+	}
+	if (cajun_array_add(n2, n3) != 0)
+	{
+		printf("Out of memory\n");
+		cajun_node_delete(n);
+		cajun_node_delete(n3);
+		return;
+	}
+	n3 = cajun_number_new(3, 1);
+	if (n3 == NULL)
+	{
+		printf("Out of memory\n");
+		cajun_node_delete(n);
+		cajun_node_delete(n2);
+		return;
+	}
+	if (cajun_array_add(n2, n3) != 0)
+	{
+		printf("Out of memory\n");
+		cajun_node_delete(n);
+		cajun_node_delete(n3);
+		return;
+	}
+	n2 = cajun_number_new(4, 1);
+	if (n2 == NULL)
+	{
+		printf("Out of memory\n");
+		cajun_node_delete(n);
+		return;
+	}
+	if (cajun_dict_add(n, "bar", strlen("bar"), n2) != 0)
+	{
+		printf("Out of memory or duplicate key\n");
+		cajun_node_delete(n);
+		cajun_node_delete(n2);
+		return;
+	}
+	n2 = cajun_dict_new();
+	if (n2 == NULL)
+	{
+		printf("Out of memory\n");
+		cajun_node_delete(n);
+		return;
+	}
+	if (cajun_dict_add(n, "baz", strlen("baz"), n2) != 0)
+	{
+		printf("Out of memory or duplicate key\n");
+		cajun_node_delete(n);
+		cajun_node_delete(n2);
+		return;
+	}
+	n2 = cajun_array_new();
+	if (n2 == NULL)
+	{
+		printf("Out of memory\n");
+		cajun_node_delete(n);
+		return;
+	}
+	if (cajun_dict_add(n, "barf", strlen("barf"), n2) != 0)
+	{
+		printf("Out of memory or duplicate key\n");
+		cajun_node_delete(n);
+		cajun_node_delete(n2);
+		return;
+	}
+	n2 = cajun_array_new();
+	if (n2 == NULL)
+	{
+		printf("Out of memory\n");
+		cajun_node_delete(n);
+		return;
+	}
+	if (cajun_dict_add(n, "quux", strlen("quux"), n2) != 0)
+	{
+		printf("Out of memory or duplicate key\n");
+		cajun_node_delete(n);
+		cajun_node_delete(n2);
+		return;
+	}
+	n3 = cajun_boolean_new(1);
+	if (n3 == NULL)
+	{
+		printf("Out of memory\n");
+		cajun_node_delete(n);
+		return;
+	}
+	if (cajun_array_add(n2, n3) != 0)
+	{
+		printf("Out of memory\n");
+		cajun_node_delete(n);
+		cajun_node_delete(n3);
+		return;
+	}
+	n3 = cajun_boolean_new(0);
+	if (n3 == NULL)
+	{
+		printf("Out of memory\n");
+		cajun_node_delete(n);
+		return;
+	}
+	if (cajun_array_add(n2, n3) != 0)
+	{
+		printf("Out of memory\n");
+		cajun_node_delete(n);
+		cajun_node_delete(n3);
+		return;
+	}
+	n3 = cajun_null_new();
+	if (n3 == NULL)
+	{
+		printf("Out of memory\n");
+		cajun_node_delete(n);
+		return;
+	}
+	if (cajun_array_add(n2, n3) != 0)
+	{
+		printf("Out of memory\n");
+		cajun_node_delete(n);
+		cajun_node_delete(n3);
+		return;
+	}
+	cajun_node_out(&outctx, n);
+	printf("\n");
+	cajun_node_delete(n);
+}
+
 int main(int argc, char **argv)
 {
 	struct caj_out_ctx outctx;
@@ -78,8 +252,11 @@ int main(int argc, char **argv)
 	}
 
 	cajun_node_out(&outctx, n);
+	cajun_node_delete(n);
+	printf("\n");
 	printf("\n");
 
-	cajun_node_delete(n);
+	outtest2();
+
 	return 0;
 }
