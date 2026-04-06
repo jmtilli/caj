@@ -90,8 +90,7 @@ int main(int argc, char **argv)
 	cajun_node_out(&outctx, n);
 	printf("\n");
 
-	cajun_node_free(cajun.n);
-	free(cajun.n);
+	cajun_node_delete(cajun.n);
 	cajun.n = NULL;
 	cajun_ctx_free(&cajun);
 	caj_free(&caj);
