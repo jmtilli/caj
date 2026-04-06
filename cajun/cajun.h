@@ -79,6 +79,16 @@ static inline void cajun_null_init(struct cajun_node *n)
 	cajun_node_init(n);
 	n->type = CAJUN_NULL;
 }
+static inline struct cajun_node *cajun_null_new(void)
+{
+	struct cajun_node *n = cajun_node_new();
+	if (n == NULL)
+	{
+		return NULL;
+	}
+	cajun_null_init(n);
+	return n;
+}
 
 static inline int cajun_string_init(struct cajun_node *n, const char *val, size_t valsz)
 {
@@ -97,6 +107,21 @@ static inline int cajun_string_init(struct cajun_node *n, const char *val, size_
 	return 0;
 }
 
+static inline struct cajun_node *cajun_string_new(const char *val, size_t valsz)
+{
+	struct cajun_node *n = cajun_node_new();
+	if (n == NULL)
+	{
+		return NULL;
+	}
+	if (cajun_string_init(n, val, valsz) != 0)
+	{
+		cajun_node_delete(n);
+		return NULL;
+	}
+	return n;
+}
+
 static inline void cajun_array_init(struct cajun_node *n)
 {
 	cajun_node_init(n);
@@ -106,6 +131,17 @@ static inline void cajun_array_init(struct cajun_node *n)
 	n->u.array.nodecap = 0;
 }
 
+static inline struct cajun_node *cajun_array_new(void)
+{
+	struct cajun_node *n = cajun_node_new();
+	if (n == NULL)
+	{
+		return NULL;
+	}
+	cajun_array_init(n);
+	return n;
+}
+
 static inline void cajun_number_init(struct cajun_node *n, double d, int is_integer)
 {
 	cajun_node_init(n);
@@ -113,12 +149,32 @@ static inline void cajun_number_init(struct cajun_node *n, double d, int is_inte
 	n->u.number.d = d;
 	n->u.number.is_integer = !!is_integer;
 }
+static inline struct cajun_node *cajun_number_new(double d, int is_integer)
+{
+	struct cajun_node *n = cajun_node_new();
+	if (n == NULL)
+	{
+		return NULL;
+	}
+	cajun_number_init(n, d, is_integer);
+	return n;
+}
 
 static inline void cajun_boolean_init(struct cajun_node *n, int b)
 {
 	cajun_node_init(n);
 	n->type = CAJUN_BOOL;
 	n->u.boolean.b = !!b;
+}
+static inline struct cajun_node *cajun_boolean_new(int b)
+{
+	struct cajun_node *n = cajun_node_new();
+	if (n == NULL)
+	{
+		return NULL;
+	}
+	cajun_boolean_init(n, b);
+	return n;
 }
 
 static inline void cajun_dict_init(struct cajun_node *n)
@@ -131,6 +187,16 @@ static inline void cajun_dict_init(struct cajun_node *n)
 	{
 		caj_rb_tree_nocmp_init(&n->u.dict.heads[i]);
 	}
+}
+static inline struct cajun_node *cajun_dict_new(void)
+{
+	struct cajun_node *n = cajun_node_new();
+	if (n == NULL)
+	{
+		return NULL;
+	}
+	cajun_dict_init(n);
+	return n;
 }
 
 static inline uint32_t cajun_key_hash(const char *key, size_t keysz)
