@@ -3,8 +3,16 @@
 
 @fileinclude @ignore "opts.smk"
 
+@if((@glob("prettyftoa"))[] == 1)
 $PRETTYFTOA_SUBMODULE ?= @true
+@else
+$PRETTYFTOA_SUBMODULE ?= @false
+@endif
+@if((@glob("streamingatof"))[] == 1)
 $STREAMINGATOF_SUBMODULE ?= @true
+@else
+$STREAMINGATOF_SUBMODULE ?= @false
+@endif
 $CC ?= "cc"
 
 # -Wstack-protector would be good but it requires -fstack-protector
