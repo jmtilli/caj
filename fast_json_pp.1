@@ -30,6 +30,11 @@ instead. Also,
 .Xr jq 1
 is somewhat faster for just pretty-printing than
 .Nm fast_json_pp .
+However, there's always a tradeoff, and
+.Xr jq 1
+uses nearly ten times the disk space that
+.Nm fast_json_pp
+uses.
 .Pp
 .Nm fast_json_pp
 also does not limit its pretty-printing to adding and removing spaces,
@@ -78,6 +83,11 @@ is neither as full-featured as
 .Xr jq 1
 nor as fast as
 .Xr jq 1 .
+However, it uses approximately a tenth of the disk space that
+.Xr jq 1
+uses, so for embedded applications,
+.Nm fast_json_pp
+may be preferable.
 .Sh AUTHOR
 Juha-Matti Tilli (juha-matti.tilli@iki.fi)
 .Sh "COPYRIGHT"
