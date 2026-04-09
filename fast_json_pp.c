@@ -1,8 +1,11 @@
 #include "caj.h"
 #include "caj_out.h"
 #include <stdio.h>
+#include <stdlib.h>
 #include <errno.h>
 #include <string.h>
+#include <getopt.h>
+#include <limits.h>
 
 static int my_start_dict(struct caj_handler *cajh, const char *key, size_t keysz)
 {
@@ -126,14 +129,69 @@ static int datasink(struct caj_out_ctx *ctx, const char *data, size_t sz)
 	return 0;
 }
 
+static void usage(const char *argv0)
+{
+	fprintf(stderr, "Usage: %s [-t] [-c count]\n", argv0);
+	exit(1);
+}
+
 int main(int argc, char **argv)
 {
 	char buf[2048];
 	size_t numbytes;
 	size_t i;
 	int err;
+	int opt;
+	int tab = 0;
+	int indentamount = -1;
 	caj_init(&inctx, &myhandler);
-	caj_out_init(&outctx, 1, 1, datasink, NULL);
+	while ((opt = getopt(argc, argv, "tc:h") ) != -1)
+	{
+		switch (opt)
+		{
+			case 't':
+				tab = 1;
+				break;
+			case 'c':
+			{
+				unsigned long ul;
+				char *endptr;
+				ul = strtoul(optarg, &endptr, 10);
+				if (!*optarg || *endptr)
+				{
+					usage(argv[0]);
+				}
+				if (ul > INT_MAX)
+				{
+					usage(argv[0]);
+				}
+				indentamount = (int)ul;
+				break;
+			}
+			case 'h':
+				usage(argv[0]);
+				break;
+			default:
+				usage(argv[0]);
+				break;
+		}
+	}
+	if (optind != argc)
+	{
+		usage(argv[0]);
+	}
+	if (indentamount < 0)
+	{
+		if (tab)
+		{
+			indentamount = 1;
+		}
+		else
+		{
+			indentamount = 4;
+		}
+	}
+	caj_out_init(&outctx, !!tab, (size_t)indentamount, datasink, NULL);
 	for (;;)
 	{
 		numbytes = fread(buf, 1, sizeof(buf), stdin);
@@ -144,6 +202,12 @@ int main(int argc, char **argv)
 		err = caj_feed(&inctx, buf, numbytes, 0);
 		if (err == 0)
 		{
+			if (feof(stdin))
+			{
+				caj_free(&inctx);
+				putchar('\n');
+				return 0;
+			}
 			for (;;)
 			{
 				numbytes = fread(buf, 1, sizeof(buf), stdin);
@@ -167,11 +231,24 @@ int main(int argc, char **argv)
 				return 1;
 			}
 			caj_free(&inctx);
+			putchar('\n');
 			return 0;
 		}
-		if (err != -EINPROGRESS)
+		if (feof(stdin))
 		{
-			fprintf(stderr, "Parse error\n");
+			err = caj_feed(&inctx, NULL, 0, 1);
+			if (err != 0)
+			{
+				fprintf(stderr, "Parse error at end: %d\n", err);
+				return 1;
+			}
+			caj_free(&inctx);
+			putchar('\n');
+			return 0;
+		}
+		if (err != -EINPROGRESS && err != 0)
+		{
+			fprintf(stderr, "Parse error: %d\n", err);
 			return 1;
 		}
 	}
@@ -182,5 +259,6 @@ int main(int argc, char **argv)
 		return 1;
 	}
 	caj_free(&inctx);
+	putchar('\n');
 	return 0;
 }

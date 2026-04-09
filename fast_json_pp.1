@@ -1,0 +1,71 @@
+.\" Manpage for fast_json_pp.
+.\" Contact juha-matti.tilli@iki.fi to correct errors or typos.
+.Dd April 9, 2026
+.Os Linux
+.Dt FAST_JSON_PP 1 LOCAL
+.Sh NAME
+.Nm fast_json_pp
+.Nd fast low-memory-usage JSON pretty printer
+.Sh SYNOPSIS
+.Nm fast_json_pp
+.Op Fl t
+.Op Fl c Ar count
+.Sh DESCRIPTION
+.Nm fast_json_pp
+is a replacement for tools such as
+.Xr json_pp 1
+and
+.Xr json_xs 1
+that is significantly faster and uses less memory. The reason for high
+performance and low memory usage is that
+.Nm fast_json_pp
+is a streaming pretty-printer. It needs not read the entire file into
+memory before starting to pretty-print it. Instead, it pretty-prints as
+it sees new data.
+.Pp
+.Nm fast_json_pp
+also does not limit its pretty-printing to adding and removing spaces,
+tabs and newlines. It also pretty-prints floating point numbers. Whenever
+it sees a floating-point number such as 0.200000000000000011 or 2e0, it
+is able to find alternative representations like 0.2 and 2.0 that are
+arguably better than 0.200000000000000011 and 2e0, and still convert to
+the same number if IEEE 754 floating-point arithmetic is used. However,
+integers are never changed to floating-point numbers and floating-point
+numbers never to integers. Do note that 2e0 and 2.0 are floating-point
+numbers whereas 2 is an integer.
+.Pp
+.Nm fast_json_pp
+always reads from standard input and writes to standard output. However,
+shell redirection can be used to redirect standard input or output to
+be a file. Filenames on the command line are not supported. Error messages
+are printed to standard error.
+.Sh OPTIONS
+.Bl -tag -width ".Fl test Ao Ar string Ac"
+.It Fl t
+Use tabs instead of spaces for pretty-printing.
+.It Fl c Ar count
+Use this many indent characters for pretty-printing. Default for spaces 
+is 4, for tabs is 1.
+.El
+.Sh "EXIT STATUS"
+.Nm fast_json_pp
+exits with nonzero exit code if an error happens, and with a zero exit code
+if pretty-printing was successful. Error messages are always printed to standard
+error, whereas JSON output is printed to standard output.
+.Sh "SEE ALSO"
+.Xr json_pp 1 ,
+.Xr json_xs 1
+.Sh HISTORY
+.Nm fast_json_pp
+was originally written in 2021 as an example program for CAJ (C API for JSON),
+but it had several shortcomings and the first production-quality version was
+made in 2026.
+.Sh "DISTRIBUTION"
+.Nm fast_json_pp
+is part of CAJ that is available at https://github.com/jmtilli/caj
+.Sh AUTHOR
+Juha-Matti Tilli (juha-matti.tilli@iki.fi)
+.Sh "COPYRIGHT"
+Copyright \(co 2017-9 Aalto University, 2020-2021,2025,2026 Juha-Matti Tilli
+.Pp
+Licensed under the MIT license.

@@ -75,18 +75,37 @@ instinc2()
     rm "$P/include/.$2.cajinstold.$$.$H" || exit 1
   fi
 }
+instbin()
+{
+  if [ -e "$P/bin/$1" ]; then
+    ln "$P/bin/$1" "$P/bin/.$1.cajinstold.$$.$H" || exit 1
+  fi
+  cp "$1" "$P/bin/.$1.cajinstnew.$$.$H" || exit 1
+  mv "$P/bin/.$1.cajinstnew.$$.$H" "$P/bin/$1" || exit 1
+  if [ -e "$P/bin/.$1.cajinstold.$$.$H" ]; then
+    # If you mount binaries across NFS, and run this command on the NFS server,
+    # you might want to comment out this rm command.
+    rm "$P/bin/.$1.cajinstold.$$.$H" || exit 1
+  fi
+}
+instman()
+{
+  mkdir -p "$P/man/man$2" || exit 1
+  cp "$1.$2" "$P/man/man$2/.$1.$2.cajinstnew.$$.$H" || exit 1
+  mv "$P/man/man$2/.$1.$2.cajinstnew.$$.$H" "$P/man/man$2/$1.$2" || exit 1
+}
 instsym()
 {
   if [ "`readlink "$P/lib/$1"`" != "libcaj.so.1" ]; then
-    ln -s libcaj.so.1 "$P/lib/.$1.smkinstnew.$$.$H" || exit 1
-    mv "$P/lib/.$1.smkinstnew.$$.$H" "$P/lib/$1" || exit 1
+    ln -s libcaj.so.1 "$P/lib/.$1.cajinstnew.$$.$H" || exit 1
+    mv "$P/lib/.$1.cajinstnew.$$.$H" "$P/lib/$1" || exit 1
   fi
 }
 instsymcajun()
 {
   if [ "`readlink "$P/lib/$1/$2"`" != "libcaj.so.1" ]; then
-    ln -s libcajun.so.1 "$P/lib/.$1.smkinstnew.$$.$H" || exit 1
-    mv "$P/lib/.$1.smkinstnew.$$.$H" "$P/lib/$1" || exit 1
+    ln -s libcajun.so.1 "$P/lib/.$1.cajinstnew.$$.$H" || exit 1
+    mv "$P/lib/.$1.cajinstnew.$$.$H" "$P/lib/$1" || exit 1
   fi
 }
 instcajuninc()
@@ -103,6 +122,8 @@ instcajuninc()
   fi
 }
 
+instbin fast_json_pp
+instman fast_json_pp 1
 instlib libcaj.a
 instlib libcaj.so.1
 instlib2 cajun libcajun.a
