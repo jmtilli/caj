@@ -137,7 +137,7 @@ static void usage(const char *argv0)
 
 int main(int argc, char **argv)
 {
-	char buf[2048];
+	char buf[32*1024];
 	size_t numbytes;
 	size_t i;
 	int err;
