@@ -8,7 +8,7 @@
 .Nd fast low-memory-usage JSON pretty printer
 .Sh SYNOPSIS
 .Nm fast_json_pp
-.Op Fl t
+.Op Fl tn
 .Op Fl c Ar count
 .Sh DESCRIPTION
 .Nm fast_json_pp
@@ -56,6 +56,8 @@ are printed to standard error.
 .Bl -tag -width ".Fl test Ao Ar string Ac"
 .It Fl t
 Use tabs instead of spaces for pretty-printing.
+.It Fl n
+Disable pretty-printing completely, outputting compact JSON.
 .It Fl c Ar count
 Use this many indent characters for pretty-printing. Default for spaces 
 is 4, for tabs is 1.

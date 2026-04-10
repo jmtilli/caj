@@ -143,14 +143,18 @@ int main(int argc, char **argv)
 	int err;
 	int opt;
 	int tab = 0;
+	int nopretty = 0;
 	int indentamount = -1;
 	caj_init(&inctx, &myhandler);
-	while ((opt = getopt(argc, argv, "tc:h") ) != -1)
+	while ((opt = getopt(argc, argv, "tnc:h") ) != -1)
 	{
 		switch (opt)
 		{
 			case 't':
 				tab = 1;
+				break;
+			case 'n':
+				nopretty = 1;
 				break;
 			case 'c':
 			{
@@ -191,7 +195,7 @@ int main(int argc, char **argv)
 			indentamount = 4;
 		}
 	}
-	caj_out_init(&outctx, !!tab, (size_t)indentamount, datasink, NULL);
+	caj_out_init(&outctx, !!tab, nopretty ? SIZE_MAX : (size_t)indentamount, datasink, NULL);
 	for (;;)
 	{
 		numbytes = fread(buf, 1, sizeof(buf), stdin);
