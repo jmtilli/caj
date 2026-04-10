@@ -26,7 +26,7 @@ $CFLAGS ?= $MYCFLAGS
 
 $CFLAGSINC = ["-I/usr/local/include"]
 
-$(SRC_LIB) = ["caj.c", "caj_out.c"]
+$(SRC_LIB) = ["caj.c", "pullcaj.c", "caj_out.c"]
 $(SRC_PROG) = ["main.c", "pullmain.c", "outmain.c", "fast_json_pp.c"]
 
 $(SRC) = [@$(SRC_LIB), @$(SRC_PROG)]
