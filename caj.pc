@@ -2,10 +2,11 @@ prefix=/usr/local
 exec_prefix=${prefix}
 libdir=${prefix}/lib
 includedir=${prefix}/include
+cajunincludedir=${prefix}/include/cajun
 
 Name: caj
 Description: C API for JSON
 Version: 0.1.0
-Cflags: -I${includedir}
+Cflags: -I${includedir} -I${cajunincludedir}
 Libs: -Wl,-rpath,${libdir} -L${libdir} -lcajun -lcaj -lstreamingatof -lprettyftoa
 
