@@ -121,6 +121,20 @@ instcajuninc()
     rm "$P/include/cajun/.$1.cajinstold.$$.$H" || exit 1
   fi
 }
+instexample3()
+{
+  if [ -e "$P/share/examples/caj/$2/$3" ]; then
+    ln "$P/share/examples/caj/$2/$3" "$P/share/examples/caj/$2/.$3.cajinstold.$$.$H" || exit 1
+  fi
+  cp "$1/$3" "$P/share/examples/caj/$2/.$3.cajinstnew.$$.$H" || exit 1
+  mv "$P/share/examples/caj/$2/.$3.cajinstnew.$$.$H" "$P/share/examples/caj/$2/$3" || exit 1
+  if [ -e "$P/share/examples/caj/$2/.$3.cajinstold.$$.$H" ]; then
+    # If you mount binaries across NFS, and run this command on the NFS server,
+    # you might want to comment out this rm command.
+    rm "$P/share/examples/caj/$2/.$3.cajinstold.$$.$H" || exit 1
+  fi
+}
+
 
 instbin fast_json_pp
 instman fast_json_pp 1
@@ -145,6 +159,33 @@ instcajuninc cajmurmur.h
 instcajuninc cajrbtree.h
 instcajuninc cajunfrag.h
 instcajuninc cajun.h
+
+mkdir -p "$P/share/examples/caj"
+mkdir -p "$P/share/examples/caj/caj"
+mkdir -p "$P/share/examples/caj/pullcaj"
+mkdir -p "$P/share/examples/caj/caj_out"
+mkdir -p "$P/share/examples/caj/cajun"
+mkdir -p "$P/share/examples/caj/cajunfrag"
+instexample3 . caj main.c
+echo "#!/bin/sh" > "$P/share/examples/caj/caj/build.sh"
+echo 'cc `pkg-config caj --cflags` main.c `pkg-config caj --libs`' >> "$P/share/examples/caj/caj/build.sh"
+chmod a+x "$P/share/examples/caj/caj/build.sh"
+instexample3 . caj_out outmain.c
+echo "#!/bin/sh" > "$P/share/examples/caj/caj_out/build.sh"
+echo 'cc `pkg-config caj --cflags` outmain.c `pkg-config caj --libs`' >> "$P/share/examples/caj/caj_out/build.sh"
+chmod a+x "$P/share/examples/caj/caj_out/build.sh"
+instexample3 . pullcaj pullmain.c
+echo "#!/bin/sh" > "$P/share/examples/caj/pullcaj/build.sh"
+echo 'cc `pkg-config caj --cflags` pullmain.c `pkg-config caj --libs`' >> "$P/share/examples/caj/pullcaj/build.sh"
+chmod a+x "$P/share/examples/caj/pullcaj/build.sh"
+instexample3 cajun cajun cajuntest.c
+echo "#!/bin/sh" > "$P/share/examples/caj/cajun/build.sh"
+echo 'cc `pkg-config caj --cflags` cajuntest.c `pkg-config caj --libs`' >> "$P/share/examples/caj/cajun/build.sh"
+chmod a+x "$P/share/examples/caj/cajun/build.sh"
+instexample3 cajun cajunfrag cajunfragtest.c
+echo "#!/bin/sh" > "$P/share/examples/caj/cajunfrag/build.sh"
+echo 'cc `pkg-config caj --cflags` cajunfragtest.c `pkg-config caj --libs`' >> "$P/share/examples/caj/cajunfrag/build.sh"
+chmod a+x "$P/share/examples/caj/cajunfrag/build.sh"
 
 mkdir -p "$P/share/pkgconfig"
 cp caj.pc "$P/share/pkgconfig/"
