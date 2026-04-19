@@ -132,6 +132,7 @@ instsym libcaj.so
 instsymcajun libcajun.so
 
 instinc caj.h
+instinc pullcaj.h
 instinc caj_out.h
 instinc2 streamingatof streamingatof.h
 instinc2 prettyftoa prettyftoa.h
