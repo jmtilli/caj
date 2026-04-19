@@ -78,8 +78,8 @@ $(LIBSDYN) = ["-lm"]
 @	["rm", "-f", $@]
 @	["ar", "rvs", $@, @@suffilter($^, ".o")]
 
-'libcaj.so.1': 'libcaj.a'
-@	[$(CC), @$(CFLAGS), "-shared", "-Wl,-soname,".$@, "-o", $@, "-Wl,--whole-archive", @@suffilter($^, ".a"), "-Wl,--no-whole-archive", @$(LDFLAGS_DYN), "-lstreamingatof", "-lprettyftoa", "-lm", "-lc", @$(LIBSDYN)]
+'libcaj.so.1': 'libcaj.a' $(LIBS)
+@	[$(CC), @$(CFLAGS), "-shared", "-Wl,-soname,".$@, "-o", $@, "-Wl,--whole-archive", @@suffilter($^, ".a"), "-Wl,--no-whole-archive", @$(LDFLAGS_DYN), "-lm", "-lc", @$(LIBSDYN)]
 
 'libcaj.so': 'libcaj.so.1'
 @	[$(RM), "-f", $@]
