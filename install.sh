@@ -146,4 +146,7 @@ instcajuninc cajrbtree.h
 instcajuninc cajunfrag.h
 instcajuninc cajun.h
 
+mkdir -p "$P/share/pkgconfig"
+cp caj.pc "$P/share/pkgconfig/"
+
 echo "All done, caj has been installed to $P"

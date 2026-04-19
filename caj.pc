@@ -1,0 +1,11 @@
+prefix=/usr/local
+exec_prefix=${prefix}
+libdir=${prefix}/lib
+includedir=${prefix}/include
+
+Name: caj
+Description: C API for JSON
+Version: 0.1.0
+Cflags: -I${includedir}
+Libs: -Wl,-rpath,${libdir} -L${libdir} -lcajun -lcaj -lstreamingatof -lprettyftoa
+
