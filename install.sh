@@ -188,6 +188,6 @@ echo 'cc `pkg-config caj --cflags` cajunfragtest.c `pkg-config caj --libs`' >> "
 chmod a+x "$P/share/examples/caj/cajunfrag/build.sh"
 
 mkdir -p "$P/share/pkgconfig"
-cp caj.pc "$P/share/pkgconfig/"
+(echo "prefix=$P"; cat caj.pc|grep -v '^prefix=') > "$P/share/pkgconfig/caj.pc"
 
 echo "All done, caj has been installed to $P"

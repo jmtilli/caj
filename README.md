@@ -107,6 +107,20 @@ git submodule update
 smka
 ```
 
+You may install CAJ by:
+
+```
+sudo ./install.sh
+```
+
+...to install it to /usr/local. You may also install CAJ by:
+
+```
+sudo ./install.sh /opt
+```
+
+...to install to /opt instead.
+
 ## License
 
 All of the material related to CAJ is licensed under the following MIT
