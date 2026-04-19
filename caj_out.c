@@ -225,7 +225,7 @@ static int caj_internal_put_i64(struct caj_out_ctx *ctx, int64_t i64)
 
 static int caj_internal_put_flop(struct caj_out_ctx *ctx, double d)
 {
-	char buf128[128];
+	char buf128[PRETTY_FTOA_BUFSIZ];
 	if (!isfinite(d))
 	{
 		abort();
@@ -235,7 +235,7 @@ static int caj_internal_put_flop(struct caj_out_ctx *ctx, double d)
 }
 static int caj_internal_put_flop_ex(struct caj_out_ctx *ctx, double d)
 {
-	char buf128[128];
+	char buf128[PRETTY_FTOA_BUFSIZ];
 	if (!isfinite(d))
 	{
 		return ctx->datasink(ctx, "null", 4);
