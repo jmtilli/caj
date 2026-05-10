@@ -78,15 +78,17 @@ require the whole dump to be parsed to a single huge multi-gigabyte parse tree.
 
 ## How to build
 
-CAJ is built using Stirmake. How to install it:
+CAJ is built using Stirmake, which requires flex, byacc, git and standard
+development tools. How to install it:
 
 ```
-git clone https://github.com/Aalto5G/stirmake
-cd stirmake
-git submodule init
-git submodule update
-cd stirc
-make
+sudo apt install git build-essential (Debian-based)
+sudo apt install flex byacc (Debian-based)
+sudo yum groupinstall 'Development Tools' (RedHat-based)
+sudo yum install git flex byacc (RedHat-based)
+git clone --recursive https://github.com/Aalto5G/stirmake
+cd stirmake/stirc
+./bootstrapnomake.sh
 ./install.sh
 ```
 
