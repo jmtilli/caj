@@ -245,7 +245,7 @@ static int caj_internal_put_flop_ex(struct caj_out_ctx *ctx, double d)
 }
 static inline int64_t caj_to_i64(double d)
 {
-	if (!isfinite(d) || d < INT64_MIN || d > INT64_MAX)
+	if (!isfinite(d) || d < (double)INT64_MIN || d > (double)INT64_MAX)
 	{
 		return INT64_MIN;
 	}
