@@ -14,6 +14,8 @@ void pullcaj_init(struct pullcaj_ctx *caj)
 	caj->mode = CAJ_MODE_VAL;
 	caj->sz = 0;
 	memset(caj->uescape, 0, sizeof(caj->uescape));
+	caj->comments = 0;
+	caj->comment_seen = 0;
 	caj->keypresent = 0;
 	caj->key = NULL;
 	caj->keysz = 0;
@@ -31,6 +33,10 @@ void pullcaj_init(struct pullcaj_ctx *caj)
 	caj->i = 0;
 
 	caj->state = 0;
+}
+void pullcaj_allow_comments(struct pullcaj_ctx *caj)
+{
+	caj->comments = 1;
 }
 
 void pullcaj_free(struct pullcaj_ctx *caj)
@@ -478,6 +484,25 @@ state1:
 			if (res != 0)
 			{
 				return res;
+			}
+			continue;
+		}
+
+		if (caj->comments && data[caj->i] == '#' && (
+		       caj->mode == CAJ_MODE_COLON ||
+		       caj->mode == CAJ_MODE_COMMA ||
+		       caj->mode == CAJ_MODE_FIRSTKEY ||
+		       caj->mode == CAJ_MODE_FIRSTVAL ||
+		       caj->mode == CAJ_MODE_KEY ||
+		       caj->mode == CAJ_MODE_VAL))
+		{
+			caj->comment_seen = 1;
+		}
+		if (caj->comment_seen)
+		{
+			if (data[caj->i] == '\n')
+			{
+				caj->comment_seen = 0;
 			}
 			continue;
 		}
