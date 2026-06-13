@@ -51,6 +51,8 @@ struct caj_ctx {
 	unsigned char sz; // uescape or token
 	char uescape[5];
 	unsigned char keypresent:1;
+	unsigned char comment_seen:1;
+	unsigned char comments:1;
 	char *key;
 	size_t keysz;
 	size_t keycap;
@@ -68,6 +70,8 @@ struct caj_ctx {
 struct caj_ctx *caj_new(struct caj_handler *handler); // caj_delete later
 
 void caj_init(struct caj_ctx *caj, struct caj_handler *handler); // caj_free
+
+void caj_allow_comments(struct caj_ctx *caj);
 
 void caj_free(struct caj_ctx *caj);
 

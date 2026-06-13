@@ -14,6 +14,8 @@ void caj_init(struct caj_ctx *caj, struct caj_handler *handler)
 	caj->mode = CAJ_MODE_VAL;
 	caj->sz = 0;
 	memset(caj->uescape, 0, sizeof(caj->uescape));
+	caj->comment_seen = 0;
+	caj->comments = 0;
 	caj->keypresent = 0;
 	caj->key = NULL;
 	caj->keysz = 0;
@@ -25,6 +27,10 @@ void caj_init(struct caj_ctx *caj, struct caj_handler *handler)
 	caj->valsz = 0;
 	caj->valcap = 0;
 	caj->handler = handler;
+}
+void caj_allow_comments(struct caj_ctx *caj)
+{
+	caj->comments = 1;
 }
 
 void caj_free(struct caj_ctx *caj)
@@ -446,6 +452,25 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 			if (res != 0)
 			{
 				return res;
+			}
+			continue;
+		}
+
+		if (caj->comments && data[i] == '#' && (
+		       caj->mode == CAJ_MODE_COLON ||
+		       caj->mode == CAJ_MODE_COMMA ||
+		       caj->mode == CAJ_MODE_FIRSTKEY ||
+		       caj->mode == CAJ_MODE_FIRSTVAL ||
+		       caj->mode == CAJ_MODE_KEY ||
+		       caj->mode == CAJ_MODE_VAL))
+		{
+			caj->comment_seen = 1;
+		}
+		if (caj->comment_seen)
+		{
+			if (data[i] == '\n')
+			{
+				caj->comment_seen = 0;
 			}
 			continue;
 		}
