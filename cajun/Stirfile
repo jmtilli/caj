@@ -28,20 +28,20 @@ $(CFLAGS) = [@$(CFLAGS)]
 @phonyrule: 'all': 'libcajun.a' 'libcajun.so' 'libcajun.so.1' $(PROG)
 
 @patrule: $(PROG): '%': '%.o' 'libcajun.a' $(LIBS)
-@	[$(CC), @$(CFLAGS), @$(LDFLAGS_DYN), "-o", $@, $<, 'libcajun.a', @$(LIBS), @$(LIBSDYN)]
+@	[@$(CC), @$(CFLAGS), @$(LDFLAGS_DYN), "-o", $@, $<, 'libcajun.a', @$(LIBS), @$(LIBSDYN)]
 
 @patrule: $(OBJ): '%.o': '%.c' '%.d'
-@	[$(CC), @$(CFLAGS), "-c", "-o", $@, $<]
+@	[@$(CC), @$(CFLAGS), "-c", "-o", $@, $<]
 
 @patrule: $(DEP): '%.d': '%.c'
-@	[$(CC), @$(CFLAGS), "-MM", "-o", $@, $<]
+@	[@$(CC), @$(CFLAGS), "-MM", "-o", $@, $<]
 
 'libcajun.a': $(OBJ_LIB)
 @	["rm", "-f", $@]
 @	["ar", "rvs", $@, @@suffilter($^, ".o")]
 
 'libcajun.so.1': 'libcajun.a' '../libcaj.so'
-@	[$(CC), @$(CFLAGS), @$(LDFLAGS_DYN), "-shared", "-Wl,-soname,".$@, "-o", $@, "-Wl,--whole-archive", @@suffilter($^, ".a"), "-Wl,--no-whole-archive", @$(LDFLAGS_DYN), "-lc", "-lm", "-L..", "-lcaj"]
+@	[@$(CC), @$(CFLAGS), @$(LDFLAGS_DYN), "-shared", "-Wl,-soname,".$@, "-o", $@, "-Wl,--whole-archive", @@suffilter($^, ".a"), "-Wl,--no-whole-archive", @$(LDFLAGS_DYN), "-lc", "-lm", "-L..", "-lcaj"]
 
 'libcajun.so': 'libcajun.so.1'
 @	["rm", "-f", $@]

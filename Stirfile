@@ -26,7 +26,7 @@ $(CC) ?= @nil
 # -Wcast-align=strict prevents CONTAINER_OF macro from working
 # -Winline too noisy
 $MYCFLAGS = ["-g", "-O2", "-Wall", "-Wextra", "-Wsign-conversion", "-Wno-missing-field-initializers", "-Wno-unused-parameter", "-Wshadow", "-Wstrict-prototypes", "-Wmissing-prototypes", "-Wpointer-arith", "-Wuninitialized", "-Wconversion", "-Wdeclaration-after-statement", "-Wbad-function-cast", "-Wdangling-else", "-Wold-style-definition", "-Wmissing-declarations", "-Wredundant-decls", "-Wnested-externs", "-std=gnu99", "-fPIC"]
-@if (@strcmp($CC, "clang") != 0)
+@if ($(CC)[] >= 1 && @strcmp($CC[0], "clang") != 0)
   $MYCFLAGS = [@$MYCFLAGS, "-Walloc-zero", "-Wjump-misses-init", "-Wlogical-op", "-Wrestrict"]
 @endif
 
@@ -91,20 +91,20 @@ $(LIBSDYN) = ["-lm"]
 @phonyrule: 'all': 'libcaj.a' 'libcaj.so' 'libcaj.so.1' $(PROG) 'cajun/all' $(SUBMODULES)
 
 @patrule: $(PROG): '%': '%.o' 'libcaj.a' $(LIBS)
-@	[$(CC), @$(CFLAGS), @$(CFLAGSINC), @$(LDFLAGS), @$(LDFLAGS_DYN), "-o", $@, $<, 'libcaj.a', @$(LIBS), @$(LIBSDYN)]
+@	[@$(CC), @$(CFLAGS), @$(CFLAGSINC), @$(LDFLAGS), @$(LDFLAGS_DYN), "-o", $@, $<, 'libcaj.a', @$(LIBS), @$(LIBSDYN)]
 
 @patrule: $(OBJ): '%.o': '%.c' '%.d'
-@	[$(CC), @$(CFLAGS), @$(CFLAGSINC), "-c", "-o", $@, $<]
+@	[@$(CC), @$(CFLAGS), @$(CFLAGSINC), "-c", "-o", $@, $<]
 
 @patrule: $(DEP): '%.d': '%.c'
-@	[$(CC), @$(CFLAGS), @$(CFLAGSINC), "-MM", "-o", $@, $<]
+@	[@$(CC), @$(CFLAGS), @$(CFLAGSINC), "-MM", "-o", $@, $<]
 
 'libcaj.a': $(OBJ_LIB)
 @	["rm", "-f", $@]
 @	["ar", "rvs", $@, @@suffilter($^, ".o")]
 
 'libcaj.so.1': 'libcaj.a' $(LIBS)
-@	[$(CC), @$(CFLAGS), "-shared", "-Wl,-soname,".$@, "-o", $@, "-Wl,--whole-archive", @@suffilter($^, ".a"), "-Wl,--no-whole-archive", @$(LDFLAGS), @$(LDFLAGS_DYN), "-lm", "-lc", @$(LIBSDYN)]
+@	[@$(CC), @$(CFLAGS), "-shared", "-Wl,-soname,".$@, "-o", $@, "-Wl,--whole-archive", @@suffilter($^, ".a"), "-Wl,--no-whole-archive", @$(LDFLAGS), @$(LDFLAGS_DYN), "-lm", "-lc", @$(LIBSDYN)]
 
 'libcaj.so': 'libcaj.so.1'
 @	[$(RM), "-f", $@]
@@ -115,15 +115,15 @@ $(LIBSDYN) = ["-lm"]
 @dirinclude "cajun"
 @if ($PRETTYFTOA_SUBMODULE)
  @beginholeyscope
-  $CC = @LP$CC
-  $CFLAGS = @LP$CFLAGS
+  $CC = @LP$CC[0]
+  $CFLAGS = [@@splice(@LP$CC, 1, @LP$CC[]), @@LP$CFLAGS]
   @projdirinclude "prettyftoa"
  @endscope
 @endif
 @if ($STREAMINGATOF_SUBMODULE)
  @beginholeyscope
-  $CC = @LP$CC
-  $CFLAGS = @LP$CFLAGS
+  $CC = @LP$CC[0]
+  $CFLAGS = [@@splice(@LP$CC, 1, @LP$CC[]), @@LP$CFLAGS]
   @projdirinclude "streamingatof"
  @endscope
 @endif
