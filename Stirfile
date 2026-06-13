@@ -15,6 +15,9 @@ $STREAMINGATOF_SUBMODULE ?= @false
 @endif
 
 $(CC) ?= @nil
+@if(@type($(CC)) == @type(""))
+  $(CC) = [$(CC)]
+@endif
 @if(@type($(CC)) == @type(@nil))
   $(CC) ``= ["sh", "-c", "echo $CC"]
   @if($(CC)[] == 0)
