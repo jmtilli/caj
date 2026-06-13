@@ -148,8 +148,12 @@ instsymcajun libcajun.so
 instinc caj.h
 instinc pullcaj.h
 instinc caj_out.h
-instinc2 streamingatof streamingatof.h
-instinc2 prettyftoa prettyftoa.h
+if [ -e streamingatof/streamingatof.h ]; then
+  instinc2 streamingatof streamingatof.h
+fi
+if [ -e prettyftoa/prettyftoa.h ]; then
+  instinc2 prettyftoa prettyftoa.h
+fi
 mkdir -p "$P/include/cajun"
 instcajuninc cajcontainerof.h
 instcajuninc cajhdr.h
