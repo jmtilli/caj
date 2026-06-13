@@ -69,6 +69,11 @@ int main(int argc, char **argv)
 				i++;
 			}
 		}
+		else if (ret < 0)
+		{
+			printf("Error occurred\n");
+			break;
+		}
 	}
 	pullcaj_free(&ctx);
 	return 0;
