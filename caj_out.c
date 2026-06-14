@@ -704,15 +704,16 @@ int caj_out_add_flop_ex(struct caj_out_ctx *ctx, double d)
 int caj_out_comment(struct caj_out_ctx *ctx, int comma_seen, const char *comment, size_t commentsz)
 {
 	int ret;
+	// FIXME support for multiline comments
 	if (comma_seen)
 	{
-		ret = ctx->datasink(ctx, ", #", 3);
+		ret = ctx->datasink(ctx, ", //", 4);
 		ctx->commentcomma = 1;
 		ctx->first = 1;
 	}
 	else
 	{
-		ret = ctx->datasink(ctx, " #", 2);
+		ret = ctx->datasink(ctx, " //", 3);
 	}
 	if (ret)
 	{

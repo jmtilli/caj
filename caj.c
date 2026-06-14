@@ -14,7 +14,10 @@ void caj_init(struct caj_ctx *caj, struct caj_handler *handler)
 	caj->mode = CAJ_MODE_VAL;
 	caj->sz = 0;
 	memset(caj->uescape, 0, sizeof(caj->uescape));
-	caj->comment_seen = 0;
+	caj->c_comment_seen = 0;
+	caj->c_comment_seen_star = 0;
+	caj->cpp_comment_seen = 0;
+	caj->comment_seen_preliminary = 0;
 	caj->comments = 0;
 	caj->keypresent = 0;
 	caj->key = NULL;
@@ -183,6 +186,123 @@ static inline char *caj_get_key(struct caj_ctx *caj)
 	return caj->key;
 }
 
+static int caj_strip_comment(struct caj_ctx *caj, const void *vdata, size_t i, size_t sz)
+{
+	const unsigned char *data = (const unsigned char*)vdata;
+	const char *cdata = (const char*)vdata;
+	int ret;
+	i++;
+	caj->mode = CAJ_MODE_ENDWS;
+	while (i < sz)
+	{
+		if (caj->comments &&
+		    !caj->comment_seen_preliminary &&
+		    !caj->cpp_comment_seen &&
+		    !caj->c_comment_seen &&
+		    data[i] == '/' &&
+		    caj->mode == CAJ_MODE_ENDWS)
+		{
+			caj->comment_seen_preliminary = 1;
+			caj->valsz = 0;
+			i++;
+			continue;
+		}
+		if (caj->comment_seen_preliminary)
+		{
+			if (data[i] == '*')
+			{
+				caj->comment_seen_preliminary = 0;
+				caj->c_comment_seen = 1;
+				caj->c_comment_seen_star = 0;
+				caj->valsz = 0;
+				i++;
+				continue;
+			}
+			if (data[i] != '/')
+			{
+				return -EINVAL;
+			}
+			caj->comment_seen_preliminary = 0;
+			caj->cpp_comment_seen = 1;
+			caj->valsz = 0;
+			i++;
+			continue;
+		}
+		if (caj->c_comment_seen)
+		{
+			if (data[i] == '*')
+			{
+				caj->c_comment_seen_star = 1;
+			}
+			else if (caj->c_comment_seen_star && data[i] == '/')
+			{
+				caj->c_comment_seen = 0;
+				caj->c_comment_seen_star = 0;
+				if (caj->handler->vtable->handle_comment != NULL)
+				{
+					ret = caj->handler->vtable->handle_comment(
+						caj->handler, caj->comma_seen,
+						caj->val, caj->valsz);
+					if (ret != 0)
+					{
+						return ret;
+					}
+				}
+			}
+			else
+			{
+				if (caj->c_comment_seen_star)
+				{
+					if (caj_put_val(caj, '*') != 0)
+					{
+						return -ENOMEM;
+					}
+				}
+				caj->c_comment_seen_star = 0;
+				if (caj_put_val(caj, cdata[i]) != 0)
+				{
+					return -ENOMEM;
+				}
+			}
+			i++;
+			continue;
+		}
+		if (caj->cpp_comment_seen)
+		{
+			if (data[i] == '\n')
+			{
+				caj->cpp_comment_seen = 0;
+				if (caj->handler->vtable->handle_comment != NULL)
+				{
+					ret = caj->handler->vtable->handle_comment(
+						caj->handler, caj->comma_seen,
+						caj->val, caj->valsz);
+					if (ret != 0)
+					{
+						return ret;
+					}
+				}
+			}
+			else
+			{
+				if (caj_put_val(caj, cdata[i]) != 0)
+				{
+					return -ENOMEM;
+				}
+			}
+			i++;
+			continue;
+		}
+		if (data[i] == ' ' || data[i] == '\n' || data[i] == '\r' || data[i] == '\t')
+		{
+			i++;
+			continue;
+		}
+		return -EOVERFLOW;
+	}
+	return 0;
+}
+
 int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 {
 	const unsigned char *data = (const unsigned char*)vdata;
@@ -239,18 +359,7 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 				{
 					if (caj->keystacksz <= 0)
 					{
-						i++;
-						while (i < sz)
-						{
-							if ((data[i] == ' ' || data[i] == '\n' || data[i] == '\r' ||
-							     data[i] == '\t'))
-							{
-								i++;
-								continue;
-							}
-							return -EOVERFLOW;
-						}
-						return 0;
+						return caj_strip_comment(caj, data, (size_t)i, usz);
 					}
 					continue;
 				}
@@ -264,18 +373,7 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 				}
 				if (caj->keystacksz <= 0)
 				{
-					i++;
-					while (i < sz)
-					{
-						if ((data[i] == ' ' || data[i] == '\n' || data[i] == '\r' ||
-						     data[i] == '\t'))
-						{
-							i++;
-							continue;
-						}
-						return -EOVERFLOW;
-					}
-					return 0;
+					return caj_strip_comment(caj, data, (size_t)i, usz);
 				}
 			}
 			else
@@ -456,7 +554,11 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 			continue;
 		}
 
-		if (caj->comments && data[i] == '#' && (
+		if (caj->comments &&
+		    !caj->comment_seen_preliminary &&
+		    !caj->cpp_comment_seen &&
+		    !caj->c_comment_seen &&
+		    data[i] == '/' && (
 		       caj->mode == CAJ_MODE_COLON ||
 		       caj->mode == CAJ_MODE_COMMA ||
 		       caj->mode == CAJ_MODE_FIRSTKEY ||
@@ -464,11 +566,68 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 		       caj->mode == CAJ_MODE_KEY ||
 		       caj->mode == CAJ_MODE_VAL))
 		{
-			caj->comment_seen = 1;
+			caj->comment_seen_preliminary = 1;
 			caj->valsz = 0;
 			continue;
 		}
-		if (caj->comment_seen)
+		if (caj->comment_seen_preliminary)
+		{
+			if (data[i] == '*')
+			{
+				caj->comment_seen_preliminary = 0;
+				caj->c_comment_seen = 1;
+				caj->c_comment_seen_star = 0;
+				caj->valsz = 0;
+				continue;
+			}
+			if (data[i] != '/')
+			{
+				return -EINVAL;
+			}
+			caj->comment_seen_preliminary = 0;
+			caj->cpp_comment_seen = 1;
+			caj->valsz = 0;
+			continue;
+		}
+		if (caj->c_comment_seen)
+		{
+			if (data[i] == '*')
+			{
+				caj->c_comment_seen_star = 1;
+			}
+			else if (caj->c_comment_seen_star && data[i] == '/')
+			{
+				caj->c_comment_seen = 0;
+				caj->c_comment_seen_star = 0;
+				if (caj->handler->vtable->handle_comment != NULL)
+				{
+					ret = caj->handler->vtable->handle_comment(
+						caj->handler, caj->comma_seen,
+						caj->val, caj->valsz);
+					if (ret != 0)
+					{
+						return ret;
+					}
+				}
+			}
+			else
+			{
+				if (caj->c_comment_seen_star)
+				{
+					if (caj_put_val(caj, '*') != 0)
+					{
+						return -ENOMEM;
+					}
+				}
+				caj->c_comment_seen_star = 0;
+				if (caj_put_val(caj, cdata[i]) != 0)
+				{
+					return -ENOMEM;
+				}
+			}
+			continue;
+		}
+		if (caj->cpp_comment_seen)
 		{
 			if (data[i] == '\n')
 			{
@@ -477,7 +636,7 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 					return -ENOMEM;
 				}
 				caj->valsz--;
-				caj->comment_seen = 0;
+				caj->cpp_comment_seen = 0;
 				if (caj->handler->vtable->handle_comment != NULL)
 				{
 					ret = caj->handler->vtable->handle_comment(
@@ -558,18 +717,7 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 				{
 					if (caj->keystacksz <= 0)
 					{
-						i++;
-						while (i < sz)
-						{
-							if ((data[i] == ' ' || data[i] == '\n' || data[i] == '\r' ||
-							     data[i] == '\t'))
-							{
-								i++;
-								continue;
-							}
-							return -EOVERFLOW;
-						}
-						return 0;
+						return caj_strip_comment(caj, data, (size_t)i, usz);
 					}
 					continue;
 				}
@@ -582,18 +730,7 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 				}
 				if (caj->keystacksz <= 0)
 				{
-					i++;
-					while (i < sz)
-					{
-						if ((data[i] == ' ' || data[i] == '\n' || data[i] == '\r' ||
-						     data[i] == '\t'))
-						{
-							i++;
-							continue;
-						}
-						return -EOVERFLOW;
-					}
-					return 0;
+					return caj_strip_comment(caj, data, (size_t)i, usz);
 				}
 				continue;
 			}
@@ -621,18 +758,7 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 				{
 					if (caj->keystacksz <= 0)
 					{
-						i++;
-						while (i < sz)
-						{
-							if ((data[i] == ' ' || data[i] == '\n' || data[i] == '\r' ||
-							     data[i] == '\t'))
-							{
-								i++;
-								continue;
-							}
-							return -EOVERFLOW;
-						}
-						return 0;
+						return caj_strip_comment(caj, data, (size_t)i, usz);
 					}
 					continue;
 				}
@@ -645,18 +771,7 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 				}
 				if (caj->keystacksz <= 0)
 				{
-					i++;
-					while (i < sz)
-					{
-						if ((data[i] == ' ' || data[i] == '\n' || data[i] == '\r' ||
-						     data[i] == '\t'))
-						{
-							i++;
-							continue;
-						}
-						return -EOVERFLOW;
-					}
-					return 0;
+					return caj_strip_comment(caj, data, (size_t)i, usz);
 				}
 				continue;
 			}
@@ -723,18 +838,7 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 			{
 				if (caj->keystacksz <= 0)
 				{
-					i++;
-					while (i < sz)
-					{
-						if ((data[i] == ' ' || data[i] == '\n' || data[i] == '\r' ||
-						     data[i] == '\t'))
-						{
-							i++;
-							continue;
-						}
-						return -EOVERFLOW;
-					}
-					return 0;
+					return caj_strip_comment(caj, data, (size_t)i, usz);
 				}
 				continue;
 			}
@@ -748,18 +852,7 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 			}
 			if (caj->keystacksz <= 0)
 			{
-				i++;
-				while (i < sz)
-				{
-					if ((data[i] == ' ' || data[i] == '\n' || data[i] == '\r' ||
-					     data[i] == '\t'))
-					{
-						i++;
-						continue;
-					}
-					return -EOVERFLOW;
-				}
-				return 0;
+				return caj_strip_comment(caj, data, (size_t)i, usz);
 			}
 			continue;
 		}
@@ -778,18 +871,7 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 			{
 				if (caj->keystacksz <= 0)
 				{
-					i++;
-					while (i < sz)
-					{
-						if ((data[i] == ' ' || data[i] == '\n' || data[i] == '\r' ||
-						     data[i] == '\t'))
-						{
-							i++;
-							continue;
-						}
-						return -EOVERFLOW;
-					}
-					return 0;
+					return caj_strip_comment(caj, data, (size_t)i, usz);
 				}
 				continue;
 			}
@@ -803,18 +885,7 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 			}
 			if (caj->keystacksz <= 0)
 			{
-				i++;
-				while (i < sz)
-				{
-					if ((data[i] == ' ' || data[i] == '\n' || data[i] == '\r' ||
-					     data[i] == '\t'))
-					{
-						i++;
-						continue;
-					}
-					return -EOVERFLOW;
-				}
-				return 0;
+				return caj_strip_comment(caj, data, (size_t)i, usz);
 			}
 			continue;
 		}
@@ -833,18 +904,7 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 			{
 				if (caj->keystacksz <= 0)
 				{
-					i++;
-					while (i < sz)
-					{
-						if ((data[i] == ' ' || data[i] == '\n' || data[i] == '\r' ||
-						     data[i] == '\t'))
-						{
-							i++;
-							continue;
-						}
-						return -EOVERFLOW;
-					}
-					return 0;
+					return caj_strip_comment(caj, data, (size_t)i, usz);
 				}
 				continue;
 			}
@@ -857,18 +917,7 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 			}
 			if (caj->keystacksz <= 0)
 			{
-				i++;
-				while (i < sz)
-				{
-					if ((data[i] == ' ' || data[i] == '\n' || data[i] == '\r' ||
-					     data[i] == '\t'))
-					{
-						i++;
-						continue;
-					}
-					return -EOVERFLOW;
-				}
-				return 0;
+				return caj_strip_comment(caj, data, (size_t)i, usz);
 			}
 			continue;
 		}
@@ -944,18 +993,7 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 					i--;
 					if (caj->keystacksz <= 0)
 					{
-						i++;
-						while (i < sz)
-						{
-							if ((data[i] == ' ' || data[i] == '\n' || data[i] == '\r' ||
-							     data[i] == '\t'))
-							{
-								i++;
-								continue;
-							}
-							return -EOVERFLOW;
-						}
-						return 0;
+						return caj_strip_comment(caj, data, (size_t)i, usz);
 					}
 					continue;
 				}
@@ -972,18 +1010,7 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 				i--;
 				if (caj->keystacksz <= 0)
 				{
-					i++;
-					while (i < sz)
-					{
-						if ((data[i] == ' ' || data[i] == '\n' || data[i] == '\r' ||
-						     data[i] == '\t'))
-						{
-							i++;
-							continue;
-						}
-						return -EOVERFLOW;
-					}
-					return 0;
+					return caj_strip_comment(caj, data, (size_t)i, usz);
 				}
 			}
 			else

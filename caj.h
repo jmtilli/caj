@@ -40,6 +40,7 @@ enum caj_mode {
 	CAJ_MODE_COLON,
 	CAJ_MODE_COMMA,
 	CAJ_MODE_NUMBER,
+	CAJ_MODE_ENDWS,
 };
 
 struct caj_keystack_item {
@@ -52,8 +53,11 @@ struct caj_ctx {
 	unsigned char sz; // uescape or token
 	char uescape[5];
 	unsigned char keypresent:1;
-	unsigned char comment_seen:1;
+	unsigned char cpp_comment_seen:1;
+	unsigned char c_comment_seen:1;
+	unsigned char c_comment_seen_star:1;
 	unsigned char comments:1;
+	unsigned char comment_seen_preliminary:1;
 	unsigned char comma_seen:1;
 	char *key;
 	size_t keysz;
