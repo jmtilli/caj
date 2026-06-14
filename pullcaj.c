@@ -490,6 +490,7 @@ state1:
 			continue;
 		}
 
+		// FIXME C and C++ style comments
 		if (caj->comments && data[caj->i] == '#' && (
 		       caj->mode == CAJ_MODE_COLON ||
 		       caj->mode == CAJ_MODE_COMMA ||
