@@ -186,7 +186,7 @@ static inline char *caj_get_key(struct caj_ctx *caj)
 	return caj->key;
 }
 
-static int caj_strip_comment(struct caj_ctx *caj, const void *vdata, size_t i, size_t sz)
+static int caj_strip_comment(struct caj_ctx *caj, const void *vdata, size_t i, size_t sz, int eof)
 {
 	const unsigned char *data = (const unsigned char*)vdata;
 	const char *cdata = (const char*)vdata;
@@ -300,7 +300,7 @@ static int caj_strip_comment(struct caj_ctx *caj, const void *vdata, size_t i, s
 		}
 		return -EOVERFLOW;
 	}
-	return 0;
+	return eof ? 0 : -EINPROGRESS;
 }
 
 int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
@@ -359,7 +359,7 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 				{
 					if (caj->keystacksz <= 0)
 					{
-						return caj_strip_comment(caj, data, (size_t)i, usz);
+						return caj_strip_comment(caj, data, (size_t)i, usz, eof);
 					}
 					continue;
 				}
@@ -373,7 +373,7 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 				}
 				if (caj->keystacksz <= 0)
 				{
-					return caj_strip_comment(caj, data, (size_t)i, usz);
+					return caj_strip_comment(caj, data, (size_t)i, usz, eof);
 				}
 			}
 			else
@@ -717,7 +717,7 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 				{
 					if (caj->keystacksz <= 0)
 					{
-						return caj_strip_comment(caj, data, (size_t)i, usz);
+						return caj_strip_comment(caj, data, (size_t)i, usz, eof);
 					}
 					continue;
 				}
@@ -730,7 +730,7 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 				}
 				if (caj->keystacksz <= 0)
 				{
-					return caj_strip_comment(caj, data, (size_t)i, usz);
+					return caj_strip_comment(caj, data, (size_t)i, usz, eof);
 				}
 				continue;
 			}
@@ -758,7 +758,7 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 				{
 					if (caj->keystacksz <= 0)
 					{
-						return caj_strip_comment(caj, data, (size_t)i, usz);
+						return caj_strip_comment(caj, data, (size_t)i, usz, eof);
 					}
 					continue;
 				}
@@ -771,7 +771,7 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 				}
 				if (caj->keystacksz <= 0)
 				{
-					return caj_strip_comment(caj, data, (size_t)i, usz);
+					return caj_strip_comment(caj, data, (size_t)i, usz, eof);
 				}
 				continue;
 			}
@@ -838,7 +838,7 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 			{
 				if (caj->keystacksz <= 0)
 				{
-					return caj_strip_comment(caj, data, (size_t)i, usz);
+					return caj_strip_comment(caj, data, (size_t)i, usz, eof);
 				}
 				continue;
 			}
@@ -852,7 +852,7 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 			}
 			if (caj->keystacksz <= 0)
 			{
-				return caj_strip_comment(caj, data, (size_t)i, usz);
+				return caj_strip_comment(caj, data, (size_t)i, usz, eof);
 			}
 			continue;
 		}
@@ -871,7 +871,7 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 			{
 				if (caj->keystacksz <= 0)
 				{
-					return caj_strip_comment(caj, data, (size_t)i, usz);
+					return caj_strip_comment(caj, data, (size_t)i, usz, eof);
 				}
 				continue;
 			}
@@ -885,7 +885,7 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 			}
 			if (caj->keystacksz <= 0)
 			{
-				return caj_strip_comment(caj, data, (size_t)i, usz);
+				return caj_strip_comment(caj, data, (size_t)i, usz, eof);
 			}
 			continue;
 		}
@@ -904,7 +904,7 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 			{
 				if (caj->keystacksz <= 0)
 				{
-					return caj_strip_comment(caj, data, (size_t)i, usz);
+					return caj_strip_comment(caj, data, (size_t)i, usz, eof);
 				}
 				continue;
 			}
@@ -917,7 +917,7 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 			}
 			if (caj->keystacksz <= 0)
 			{
-				return caj_strip_comment(caj, data, (size_t)i, usz);
+				return caj_strip_comment(caj, data, (size_t)i, usz, eof);
 			}
 			continue;
 		}
@@ -993,7 +993,7 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 					i--;
 					if (caj->keystacksz <= 0)
 					{
-						return caj_strip_comment(caj, data, (size_t)i, usz);
+						return caj_strip_comment(caj, data, (size_t)i, usz, eof);
 					}
 					continue;
 				}
@@ -1010,7 +1010,7 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 				i--;
 				if (caj->keystacksz <= 0)
 				{
-					return caj_strip_comment(caj, data, (size_t)i, usz);
+					return caj_strip_comment(caj, data, (size_t)i, usz, eof);
 				}
 			}
 			else
@@ -1047,6 +1047,11 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 			return 0;
 		}
 		return -EINPROGRESS;
+	}
+	if (caj->keystacksz <= 0 && eof &&
+	    caj->mode == CAJ_MODE_ENDWS)
+	{
+		return 0;
 	}
 	return -EINPROGRESS;
 }
