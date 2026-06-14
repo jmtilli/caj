@@ -77,5 +77,8 @@ extern const struct caj_handler_vtable cajunfrag_vtable;
 int cajunfrag_parse(const char *data, size_t sz,
                     const struct cajunfrag_handler_vtable *my_vtable,
                     void *userdata);
+int cajunfrag_parse_2(const char *data, size_t sz,
+                      const struct cajunfrag_handler_vtable *my_vtable,
+                      void *userdata, int comments);
 
 #endif

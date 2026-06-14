@@ -2273,5 +2273,6 @@ static inline void cajun_ctx_free(struct cajun_ctx *ctx)
 }
 
 struct cajun_node *cajun_node_parse(const char *data, size_t sz);
+struct cajun_node *cajun_node_parse_2(const char *data, size_t sz, int comments);
 
 #endif

@@ -751,7 +751,7 @@ void cajun_ctx_delete(struct cajun_ctx *ctx)
 	free(ctx);
 }
 
-struct cajun_node *cajun_node_parse(const char *data, size_t sz)
+struct cajun_node *cajun_node_parse_2(const char *data, size_t sz, int comments)
 {
 	struct caj_ctx caj;
 	struct cajun_ctx cajun;
@@ -763,6 +763,10 @@ struct cajun_node *cajun_node_parse(const char *data, size_t sz)
 	int ret;
 
 	caj_init(&caj, &myhandler);
+	if (comments)
+	{
+		caj_allow_comments(&caj);
+	}
 	cajun_ctx_init(&cajun);
 	ret = caj_feed(&caj, data, sz, 1);
 	if (ret != 0)
@@ -781,4 +785,8 @@ struct cajun_node *cajun_node_parse(const char *data, size_t sz)
 	cajun_ctx_free(&cajun);
 	caj_free(&caj);
 	return res;
+}
+struct cajun_node *cajun_node_parse(const char *data, size_t sz)
+{
+	return cajun_node_parse_2(data, sz, 0);
 }
