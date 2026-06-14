@@ -472,6 +472,11 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 		{
 			if (data[i] == '\n')
 			{
+				if (caj_put_val(caj, '\0') != 0)
+				{
+					return -ENOMEM;
+				}
+				caj->valsz--;
 				caj->comment_seen = 0;
 				if (caj->handler->vtable->handle_comment != NULL)
 				{
