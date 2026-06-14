@@ -465,12 +465,28 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 		       caj->mode == CAJ_MODE_VAL))
 		{
 			caj->comment_seen = 1;
+			caj->valsz = 0;
+			continue;
 		}
 		if (caj->comment_seen)
 		{
 			if (data[i] == '\n')
 			{
 				caj->comment_seen = 0;
+				if (caj->handler->vtable->handle_comment != NULL)
+				{
+					ret = caj->handler->vtable->handle_comment(
+						caj->handler,
+						caj->val, caj->valsz);
+					if (ret != 0)
+					{
+						return ret;
+					}
+				}
+			}
+			else if (caj_put_val(caj, (char)data[i]) != 0)
+			{
+				return -ENOMEM;
 			}
 			continue;
 		}
