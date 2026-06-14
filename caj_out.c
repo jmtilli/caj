@@ -56,6 +56,7 @@ static int caj_out_indent(struct caj_out_ctx *ctx, int comma)
 	const char *indentchars = ctx->commanlindentchars;
 	size_t off = 2;
 	int ret;
+	int do_extracomma = 0;
 	if (!comma)
 	{
 		indentchars++;
@@ -89,6 +90,11 @@ static int caj_out_indent(struct caj_out_ctx *ctx, int comma)
 	{
 		first = 0;
 	}
+	else if (ctx->commentnewline && comma)
+	{
+		first = 0;
+		do_extracomma = 1;
+	}
 	ctx->commentnewline = 0;
 	while (toindent > 0)
 	{
@@ -106,6 +112,14 @@ static int caj_out_indent(struct caj_out_ctx *ctx, int comma)
 		}
 		toindent -= thisround;
 		first = 0;
+	}
+	if (do_extracomma)
+	{
+		ret = ctx->datasink(ctx, ", ", 2);
+		if (ret)
+		{
+			return ret;
+		}
 	}
 	return 0;
 }
