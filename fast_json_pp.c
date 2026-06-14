@@ -137,7 +137,7 @@ static int datasink(struct caj_out_ctx *ctx, const char *data, size_t sz)
 
 static void usage(const char *argv0)
 {
-	fprintf(stderr, "Usage: %s [-t] [-c count]\n", argv0);
+	fprintf(stderr, "Usage: %s [-t] [-n] [-C [-C]] [-c count]\n", argv0);
 	exit(1);
 }
 
