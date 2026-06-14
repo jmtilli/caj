@@ -12,6 +12,7 @@ struct pullcaj_ctx {
 	unsigned char keypresent:1;
 	unsigned char comment_seen:1;
 	unsigned char comments:1;
+	unsigned char comma_seen:1;
 	char *key;
 	size_t keysz;
 	size_t keycap;
@@ -63,6 +64,7 @@ struct pullcaj_event_info {
 		struct {
 			const char *comment;
 			size_t commentsz;
+			unsigned char comma_seen:1;
 		} comm;
 	} u;
 };

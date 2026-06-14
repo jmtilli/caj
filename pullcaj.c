@@ -515,6 +515,7 @@ state1:
 				ev->ev = CAJ_EV_COMMENT;
 				ev->u.comm.comment = caj->val;
 				ev->u.comm.commentsz = caj->valsz;
+				ev->u.comm.comma_seen = caj->comma_seen;
 				caj->state = 11;
 				return 1;
 			}
@@ -551,6 +552,7 @@ state11:
 		{
 			if (data[caj->i] == ',')
 			{
+				caj->comma_seen = 1;
 				if (caj->keypresent)
 				{
 					caj->mode = CAJ_MODE_KEY;
@@ -563,6 +565,7 @@ state11:
 				continue;
 			}
 		}
+		caj->comma_seen = 0;
 		if ((caj->mode == CAJ_MODE_COMMA || caj->mode == CAJ_MODE_FIRSTKEY) && data[caj->i] == '}')
 		{
 			if (data[caj->i] == '}')
