@@ -844,7 +844,8 @@ state8:
 			}
 			for (j = (myssize_t)caj->i; j < (myssize_t)caj->i + szret; j++)
 			{
-				if (cdata[j] == '.' || cdata[j] == 'e')
+				if (cdata[j] == '.' || cdata[j] == 'e' ||
+				    cdata[j] == 'E')
 				{
 					caj->is_integer = 0;
 				}

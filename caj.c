@@ -925,7 +925,8 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 			}
 			for (j = i; j < i + szret; j++)
 			{
-				if (cdata[j] == '.' || cdata[j] == 'e')
+				if (cdata[j] == '.' || cdata[j] == 'e' ||
+				    cdata[j] == 'E')
 				{
 					caj->is_integer = 0;
 				}
