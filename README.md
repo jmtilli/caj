@@ -26,6 +26,11 @@ type that is not available in C language. Thus any C JSON library will probably
 have a custom implementation of the associative array, which may differ from
 the implementation that you want to use in your program.
 
+CAJ has support for comments too, that need to be explicitly enabled. The
+comment support is according to the JSONC standard, where both C-style and
+C++-style comments are supported in locations where whitespace can appear in
+JSON.
+
 ## C API for JSON out (CAJ\_out): a JSON output library for C
 
 Many JSON output libraries require you to convert your own object structure
