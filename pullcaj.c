@@ -242,6 +242,8 @@ int pullcaj_get_event(struct pullcaj_ctx *caj, struct pullcaj_event_info *ev)
 			goto state9;
 		case 10:
 			goto state10;
+		case 11:
+			goto state11;
 		default:
 			abort();
 	}
@@ -497,13 +499,30 @@ state1:
 		       caj->mode == CAJ_MODE_VAL))
 		{
 			caj->comment_seen = 1;
+			caj->valsz = 0;
+			continue;
 		}
 		if (caj->comment_seen)
 		{
 			if (data[caj->i] == '\n')
 			{
+				if (pullcaj_put_val(caj, '\0') != 0)
+				{
+					return -ENOMEM;
+				}
+				caj->valsz--;
 				caj->comment_seen = 0;
+				ev->ev = CAJ_EV_COMMENT;
+				ev->u.comm.comment = caj->val;
+				ev->u.comm.commentsz = caj->valsz;
+				caj->state = 11;
+				return 1;
 			}
+			else if (pullcaj_put_val(caj, (char)data[caj->i]) != 0)
+			{
+				return -ENOMEM;
+			}
+state11:
 			continue;
 		}
 

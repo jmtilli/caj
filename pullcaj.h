@@ -41,6 +41,7 @@ enum pullcaj_event {
 	CAJ_EV_STR, // union field str
 	CAJ_EV_NUM, // union field num
 	CAJ_EV_BOOL, // union field b
+	CAJ_EV_COMMENT, // union field comm
 };
 
 struct pullcaj_event_info {
@@ -59,6 +60,10 @@ struct pullcaj_event_info {
 			const char *val;
 			size_t valsz;
 		} str;
+		struct {
+			const char *comment;
+			size_t commentsz;
+		} comm;
 	} u;
 };
 
