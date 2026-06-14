@@ -53,6 +53,11 @@ static int my_handle_null(struct caj_handler *cajh, const char *key, size_t keys
 		return caj_out_put2_null(octx, key, keysz);
 	}
 }
+static int my_handle_comment(struct caj_handler *cajh, int comma_seen, const char *comment, size_t commentsz)
+{
+	struct caj_out_ctx *octx = (struct caj_out_ctx*)cajh->userdata;
+	return caj_out_comment(octx, comma_seen, comment, commentsz);
+}
 static int my_handle_string(struct caj_handler *cajh, const char *key, size_t keysz, const char *val, size_t valsz)
 {
 	struct caj_out_ctx *octx = (struct caj_out_ctx*)cajh->userdata;
@@ -113,6 +118,7 @@ struct caj_handler_vtable myhandler_vtable = {
 	.handle_string = my_handle_string,
 	.handle_number = my_handle_number,
 	.handle_boolean = my_handle_boolean,
+	.handle_comment = my_handle_comment,
 };
 
 struct caj_ctx inctx;
@@ -158,7 +164,7 @@ int main(int argc, char **argv)
 				nopretty = 1;
 				break;
 			case 'C':
-				comments = 1;
+				comments++;
 				break;
 			case 'c':
 			{
@@ -200,9 +206,13 @@ int main(int argc, char **argv)
 		}
 	}
 	caj_out_init(&outctx, !!tab, nopretty ? SIZE_MAX : (size_t)indentamount, datasink, NULL);
-	if (comments)
+	if (comments >= 1)
 	{
 		caj_allow_comments(&inctx);
+	}
+	if (comments < 2)
+	{
+		myhandler_vtable.handle_comment = NULL;
 	}
 	for (;;)
 	{

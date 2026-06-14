@@ -61,6 +61,11 @@ static int caj_out_indent(struct caj_out_ctx *ctx, int comma)
 		indentchars++;
 		off--;
 	}
+	if (ctx->commentcomma)
+	{
+		comma = 0;
+		ctx->commentcomma = 0;
+	}
 	if (ctx->indentamount == SIZE_MAX)
 	{
 		if (comma)
@@ -69,14 +74,22 @@ static int caj_out_indent(struct caj_out_ctx *ctx, int comma)
 		}
 		return 0;
 	}
-	if (toindent == 0)
+	if (!ctx->commentnewline)
 	{
-		if (comma)
+		if (toindent == 0)
 		{
-			return ctx->datasink(ctx, ",\n", 2);
+			if (comma)
+			{
+				return ctx->datasink(ctx, ",\n", 2);
+			}
+			return ctx->datasink(ctx, "\n", 1);
 		}
-		return ctx->datasink(ctx, "\n", 1);
 	}
+	if (ctx->commentnewline && !comma)
+	{
+		first = 0;
+	}
+	ctx->commentnewline = 0;
 	while (toindent > 0)
 	{
 		size_t thisround = toindent;
@@ -672,6 +685,32 @@ int caj_out_add_flop_ex(struct caj_out_ctx *ctx, double d)
 	ctx->veryfirst = 0;
 	ret = caj_internal_put_flop_ex(ctx, d);
 	ctx->first = 0;
+	return ret;
+}
+int caj_out_comment(struct caj_out_ctx *ctx, int comma_seen, const char *comment, size_t commentsz)
+{
+	int ret;
+	if (comma_seen)
+	{
+		ret = ctx->datasink(ctx, ", #", 3);
+		ctx->commentcomma = 1;
+		ctx->first = 1;
+	}
+	else
+	{
+		ret = ctx->datasink(ctx, " #", 2);
+	}
+	if (ret)
+	{
+		return ret;
+	}
+	ret = ctx->datasink(ctx, comment, commentsz);
+	if (ret)
+	{
+		return ret;
+	}
+	ret = ctx->datasink(ctx, "\n", 1);
+	ctx->commentnewline = 1;
 	return ret;
 }
 int caj_out_add_number(struct caj_out_ctx *ctx, double d)

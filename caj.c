@@ -476,7 +476,7 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 				if (caj->handler->vtable->handle_comment != NULL)
 				{
 					ret = caj->handler->vtable->handle_comment(
-						caj->handler,
+						caj->handler, caj->comma_seen,
 						caj->val, caj->valsz);
 					if (ret != 0)
 					{
@@ -516,6 +516,7 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 		{
 			if (data[i] == ',')
 			{
+				caj->comma_seen = 1;
 				if (caj->keypresent)
 				{
 					caj->mode = CAJ_MODE_KEY;
@@ -528,6 +529,7 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 				continue;
 			}
 		}
+		caj->comma_seen = 0;
 		if ((caj->mode == CAJ_MODE_COMMA || caj->mode == CAJ_MODE_FIRSTKEY) && data[i] == '}')
 		{
 			if (data[i] == '}')

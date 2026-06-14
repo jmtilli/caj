@@ -15,7 +15,7 @@ struct caj_handler_vtable {
 	int (*handle_string)(struct caj_handler *cajh, const char *key, size_t keysz, const char *val, size_t valsz);
 	int (*handle_number)(struct caj_handler *cajh, const char *key, size_t keysz, double d, int is_integer);
 	int (*handle_boolean)(struct caj_handler *cajh, const char *key, size_t keysz, int b);
-	int (*handle_comment)(struct caj_handler *cajh, const char *comment, size_t commentsz);
+	int (*handle_comment)(struct caj_handler *cajh, int comma_seen, const char *comment, size_t commentsz);
 };
 
 struct caj_handler {
@@ -54,6 +54,7 @@ struct caj_ctx {
 	unsigned char keypresent:1;
 	unsigned char comment_seen:1;
 	unsigned char comments:1;
+	unsigned char comma_seen:1;
 	char *key;
 	size_t keysz;
 	size_t keycap;

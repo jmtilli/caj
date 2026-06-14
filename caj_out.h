@@ -13,6 +13,8 @@ struct caj_out_ctx {
 	size_t curindentlevel;
 	unsigned first:1;
 	unsigned veryfirst:1;
+	unsigned commentnewline:1;
+	unsigned commentcomma:1;
 };
 
 int caj_out_put2_start_dict(struct caj_out_ctx *ctx, const char *key, size_t keysz);
@@ -48,6 +50,7 @@ int caj_out_add_boolean(struct caj_out_ctx *ctx, int b);
 int caj_out_put2_null(struct caj_out_ctx *ctx, const char *key, size_t keysz);
 int caj_out_put_null(struct caj_out_ctx *ctx, const char *key);
 int caj_out_add_null(struct caj_out_ctx *ctx);
+int caj_out_comment(struct caj_out_ctx *ctx, int comma_seen, const char *comment, size_t commentsz);
 
 void caj_out_init(struct caj_out_ctx *ctx, int tabs, size_t indentamount,
                   int (*datasink)(struct caj_out_ctx *ctx, const char *data, size_t sz),
