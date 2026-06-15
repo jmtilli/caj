@@ -247,7 +247,7 @@ static int caj_strip_comment(struct caj_ctx *caj, const void *vdata, size_t i, s
 				{
 					ret = caj->handler->vtable->handle_comment(
 						caj->handler, caj->comma_seen,
-						caj->val, caj->valsz);
+						caj->val, caj->valsz, 1);
 					if (ret != 0)
 					{
 						return ret;
@@ -281,7 +281,7 @@ static int caj_strip_comment(struct caj_ctx *caj, const void *vdata, size_t i, s
 				{
 					ret = caj->handler->vtable->handle_comment(
 						caj->handler, caj->comma_seen,
-						caj->val, caj->valsz);
+						caj->val, caj->valsz, 0);
 					if (ret != 0)
 					{
 						return ret;
@@ -608,7 +608,7 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 				{
 					ret = caj->handler->vtable->handle_comment(
 						caj->handler, caj->comma_seen,
-						caj->val, caj->valsz);
+						caj->val, caj->valsz, 1);
 					if (ret != 0)
 					{
 						return ret;
@@ -646,7 +646,7 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 				{
 					ret = caj->handler->vtable->handle_comment(
 						caj->handler, caj->comma_seen,
-						caj->val, caj->valsz);
+						caj->val, caj->valsz, 0);
 					if (ret != 0)
 					{
 						return ret;

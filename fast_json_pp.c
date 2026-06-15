@@ -53,7 +53,7 @@ static int my_handle_null(struct caj_handler *cajh, const char *key, size_t keys
 		return caj_out_put2_null(octx, key, keysz);
 	}
 }
-static int my_handle_comment(struct caj_handler *cajh, int comma_seen, const char *comment, size_t commentsz)
+static int my_handle_comment(struct caj_handler *cajh, int comma_seen, const char *comment, size_t commentsz, int multiline)
 {
 	struct caj_out_ctx *octx = (struct caj_out_ctx*)cajh->userdata;
 	return caj_out_comment(octx, comma_seen, comment, commentsz);
