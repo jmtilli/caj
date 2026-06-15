@@ -8,7 +8,7 @@
 .Nd fast low-memory-usage JSON pretty printer
 .Sh SYNOPSIS
 .Nm fast_json_pp
-.Op Fl tn
+.Op Fl tnCCT
 .Op Fl c Ar count
 .Sh DESCRIPTION
 .Nm fast_json_pp
@@ -61,6 +61,11 @@ Disable pretty-printing completely, outputting compact JSON.
 .It Fl c Ar count
 Use this many indent characters for pretty-printing. Default for spaces 
 is 4, for tabs is 1.
+.It Fl C
+Enable support for comments. If specified once, removes comments from
+the output. If specified twice, retains the comments.
+.It Fl T
+Enable support for trailing comma.
 .El
 .Sh "EXIT STATUS"
 .Nm fast_json_pp
@@ -90,6 +95,16 @@ However, it uses approximately a tenth of the disk space that
 uses, so for embedded applications,
 .Nm fast_json_pp
 may be preferable.
+.Pp
+If pretty-printing JSON that has included C-style multiline comments, the
+indenting only applies to JSON and not to the multiline comments.  Thus, if the
+multiline comments were correctly indented in the input and you change the
+amount of indenting, they probably will not be correctly indented in the
+output.
+.Pp
+If you have a comment between an object key and a value, due to the
+implementation of the library that handles both the key and the value using the
+same callback, the comment gets moved to before the key in the produced output.
 .Sh AUTHOR
 Juha-Matti Tilli (juha-matti.tilli@iki.fi)
 .Sh "COPYRIGHT"
