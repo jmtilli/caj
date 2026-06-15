@@ -323,6 +323,10 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 	{
 		return -EFAULT;
 	}
+	if (caj->mode == CAJ_MODE_ENDWS)
+	{
+		return caj_strip_comment(caj, data, (size_t)0, usz, eof);
+	}
 	for (i = 0; i < sz; i++)
 	{
 		if (caj->mode == CAJ_MODE_KEYSTRING)
