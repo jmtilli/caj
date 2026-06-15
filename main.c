@@ -1,6 +1,7 @@
 #include "caj.h"
 #include <stdio.h>
 #include <string.h>
+#include <errno.h>
 
 struct caj_ctx ctx;
 
@@ -90,7 +91,7 @@ int main(int argc, char **argv)
 	for (int i = 0; i < (int)strlen(data); i++)
 	{
 		ret = caj_feed(&ctx, data+i, 1, (i == (int)strlen(data) - 1));
-		if (ret != 0)
+		if (ret != 0 && ret != -EINPROGRESS)
 		{
 			printf("ret %d\n", ret);
 			return 1;
