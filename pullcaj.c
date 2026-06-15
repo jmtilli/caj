@@ -279,6 +279,7 @@ static int pullcaj_strip_comment(struct pullcaj_ctx *caj, struct pullcaj_event_i
 				ev->u.comm.comment = caj->val;
 				ev->u.comm.commentsz = caj->valsz;
 				ev->u.comm.comma_seen = caj->comma_seen;
+				ev->u.comm.multiline = 1;
 				return 1;
 			}
 			else
@@ -308,6 +309,7 @@ static int pullcaj_strip_comment(struct pullcaj_ctx *caj, struct pullcaj_event_i
 				ev->u.comm.comment = caj->val;
 				ev->u.comm.commentsz = caj->valsz;
 				ev->u.comm.comma_seen = caj->comma_seen;
+				ev->u.comm.multiline = 0;
 				return 1;
 			}
 			else
@@ -657,6 +659,7 @@ state1:
 				ev->u.comm.comment = caj->val;
 				ev->u.comm.commentsz = caj->valsz;
 				ev->u.comm.comma_seen = caj->comma_seen;
+				ev->u.comm.multiline = 1;
 				caj->state = 11;
 				return 1;
 			}
@@ -692,6 +695,7 @@ state11:
 				ev->u.comm.comment = caj->val;
 				ev->u.comm.commentsz = caj->valsz;
 				ev->u.comm.comma_seen = caj->comma_seen;
+				ev->u.comm.multiline = 0;
 				caj->state = 13;
 				return 1;
 			}

@@ -69,6 +69,7 @@ struct pullcaj_event_info {
 			const char *comment;
 			size_t commentsz;
 			unsigned char comma_seen:1;
+			unsigned char multiline:1;
 		} comm;
 	} u;
 };
