@@ -19,6 +19,7 @@ void pullcaj_init(struct pullcaj_ctx *caj)
 	caj->cpp_comment_seen = 0;
 	caj->comment_seen_preliminary = 0;
 	caj->comments = 0;
+	caj->allow_trailing_comma = 0;
 	caj->keypresent = 0;
 	caj->key = NULL;
 	caj->keysz = 0;
@@ -40,6 +41,10 @@ void pullcaj_init(struct pullcaj_ctx *caj)
 void pullcaj_allow_comments(struct pullcaj_ctx *caj)
 {
 	caj->comments = 1;
+}
+void pullcaj_allow_trailing_comma(struct pullcaj_ctx *caj)
+{
+	caj->allow_trailing_comma = 1;
 }
 
 void pullcaj_free(struct pullcaj_ctx *caj)
@@ -737,7 +742,9 @@ state13:
 			}
 		}
 		caj->comma_seen = 0;
-		if ((caj->mode == CAJ_MODE_COMMA || caj->mode == CAJ_MODE_FIRSTKEY) && data[caj->i] == '}')
+		if ((caj->mode == CAJ_MODE_COMMA || caj->mode == CAJ_MODE_FIRSTKEY ||
+		    (caj->allow_trailing_comma && caj->mode == CAJ_MODE_KEY)) &&
+		   data[caj->i] == '}')
 		{
 			if (data[caj->i] == '}')
 			{
@@ -771,13 +778,15 @@ state2:
 				continue;
 			}
 		}
-		if ((caj->mode == CAJ_MODE_COMMA || caj->mode == CAJ_MODE_FIRSTVAL) && data[caj->i] == ']')
+		if ((caj->mode == CAJ_MODE_COMMA || caj->mode == CAJ_MODE_FIRSTVAL ||
+		    (caj->allow_trailing_comma && caj->mode == CAJ_MODE_VAL)) &&
+		   data[caj->i] == ']')
 		{
 			if (data[caj->i] == ']')
 			{
-				if (caj->mode == CAJ_MODE_COMMA)
+				if (caj->mode == CAJ_MODE_COMMA || caj->mode == CAJ_MODE_VAL)
 				{
-					if (caj->keypresent)
+					if (caj->keypresent || caj->keystacksz <= 0)
 					{
 						return -EINVAL;
 					}

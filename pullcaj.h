@@ -14,6 +14,7 @@ struct pullcaj_ctx {
 	unsigned char c_comment_seen:1;
 	unsigned char c_comment_seen_star:1;
 	unsigned char comments:1;
+	unsigned char allow_trailing_comma:1;
 	unsigned char comment_seen_preliminary:1;
 	unsigned char comma_seen:1;
 	char *key;
@@ -77,6 +78,7 @@ struct pullcaj_ctx *pullcaj_new(void); // pullcaj_delete later
 void pullcaj_init(struct pullcaj_ctx *pc);
 
 void pullcaj_allow_comments(struct pullcaj_ctx *caj);
+void pullcaj_allow_trailing_comma(struct pullcaj_ctx *caj);
 
 // buffer needs to be valid until next call to this function is made
 int pullcaj_set_buf(struct pullcaj_ctx *pc, const void *vdata, size_t usz, int eof);

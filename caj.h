@@ -57,6 +57,7 @@ struct caj_ctx {
 	unsigned char c_comment_seen:1;
 	unsigned char c_comment_seen_star:1;
 	unsigned char comments:1;
+	unsigned char allow_trailing_comma:1;
 	unsigned char comment_seen_preliminary:1;
 	unsigned char comma_seen:1;
 	char *key;
@@ -78,6 +79,7 @@ struct caj_ctx *caj_new(struct caj_handler *handler); // caj_delete later
 void caj_init(struct caj_ctx *caj, struct caj_handler *handler); // caj_free
 
 void caj_allow_comments(struct caj_ctx *caj);
+void caj_allow_trailing_comma(struct caj_ctx *caj);
 
 void caj_free(struct caj_ctx *caj);
 

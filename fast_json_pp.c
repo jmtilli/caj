@@ -149,11 +149,12 @@ int main(int argc, char **argv)
 	int err;
 	int opt;
 	int comments = 0;
+	int trailingcomma = 0;
 	int tab = 0;
 	int nopretty = 0;
 	int indentamount = -1;
 	caj_init(&inctx, &myhandler);
-	while ((opt = getopt(argc, argv, "tnc:hC") ) != -1)
+	while ((opt = getopt(argc, argv, "tnc:hCT") ) != -1)
 	{
 		switch (opt)
 		{
@@ -165,6 +166,9 @@ int main(int argc, char **argv)
 				break;
 			case 'C':
 				comments++;
+				break;
+			case 'T':
+				trailingcomma = 1;
 				break;
 			case 'c':
 			{
@@ -209,6 +213,10 @@ int main(int argc, char **argv)
 	if (comments >= 1)
 	{
 		caj_allow_comments(&inctx);
+	}
+	if (trailingcomma)
+	{
+		caj_allow_trailing_comma(&inctx);
 	}
 	if (comments < 2)
 	{
