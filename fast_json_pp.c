@@ -246,6 +246,8 @@ int main(int argc, char **argv)
 					if ((buf[i] != ' ' && buf[i] != '\n' &&
 					     buf[i] != '\r' && buf[i] != '\t'))
 					{
+						putchar('\n');
+						fflush(stdout);
 						fprintf(stderr, "Junk at end\n");
 						return 1;
 					}
@@ -257,6 +259,8 @@ int main(int argc, char **argv)
 			}
 			if (!feof(stdin))
 			{
+				putchar('\n');
+				fflush(stdout);
 				fprintf(stderr, "Not EOF at end\n");
 				return 1;
 			}
@@ -268,12 +272,16 @@ int main(int argc, char **argv)
 		{
 			if (err != -EINPROGRESS && err != 0)
 			{
+				putchar('\n');
+				fflush(stdout);
 				fprintf(stderr, "Parse error: %d\n", err);
 				return 1;
 			}
 			err = caj_feed(&inctx, NULL, 0, 1);
 			if (err != 0)
 			{
+				putchar('\n');
+				fflush(stdout);
 				fprintf(stderr, "Parse error at end: %d\n", err);
 				return 1;
 			}
@@ -283,6 +291,8 @@ int main(int argc, char **argv)
 		}
 		if (err != -EINPROGRESS && err != 0)
 		{
+			putchar('\n');
+			fflush(stdout);
 			fprintf(stderr, "Parse error: %d\n", err);
 			return 1;
 		}
@@ -290,6 +300,8 @@ int main(int argc, char **argv)
 	err = caj_feed(&inctx, NULL, 0, 1);
 	if (err != 0)
 	{
+		putchar('\n');
+		fflush(stdout);
 		fprintf(stderr, "Parse error at end: %d\n", err);
 		return 1;
 	}
