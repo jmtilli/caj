@@ -305,6 +305,10 @@ static int caj_strip_comment(struct caj_ctx *caj, const void *vdata, size_t i, s
 		}
 		return -EOVERFLOW;
 	}
+	if (caj->c_comment_seen || caj->comment_seen_preliminary)
+	{
+		return -EINPROGRESS;
+	}
 	return eof ? 0 : -EINPROGRESS;
 }
 
@@ -1055,6 +1059,10 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 		{
 			return 0;
 		}
+		return -EINPROGRESS;
+	}
+	if (caj->c_comment_seen || caj->comment_seen_preliminary)
+	{
 		return -EINPROGRESS;
 	}
 	if (caj->keystacksz <= 0 && eof &&
