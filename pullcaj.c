@@ -329,6 +329,10 @@ static int pullcaj_strip_comment(struct pullcaj_ctx *caj, struct pullcaj_event_i
 		}
 		return -EOVERFLOW;
 	}
+	if (caj->c_comment_seen || caj->comment_seen_preliminary)
+	{
+		return -EINPROGRESS;
+	}
 	return caj->eof ? 0 : -EINPROGRESS;
 }
 
@@ -1041,6 +1045,10 @@ state10:
 		return -EINPROGRESS;
 	}
 	caj->state = 0;
+	if (caj->c_comment_seen || caj->comment_seen_preliminary)
+	{
+		return -EINPROGRESS;
+	}
 	if (caj->keystacksz <= 0 && caj->eof &&
 	    caj->mode == CAJ_MODE_ENDWS)
 	{
