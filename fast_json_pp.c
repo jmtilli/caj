@@ -266,6 +266,11 @@ int main(int argc, char **argv)
 		}
 		if (feof(stdin))
 		{
+			if (err != -EINPROGRESS && err != 0)
+			{
+				fprintf(stderr, "Parse error: %d\n", err);
+				return 1;
+			}
 			err = caj_feed(&inctx, NULL, 0, 1);
 			if (err != 0)
 			{
