@@ -582,9 +582,9 @@ void cajunfrag_ctx_delete(struct cajunfrag_ctx *ctx)
 	free(ctx);
 }
 
-int cajunfrag_parse_2(const char *data, size_t sz,
+int cajunfrag_parse_3(const char *data, size_t sz,
                       const struct cajunfrag_handler_vtable *my_vtable,
-                      void *userdata, int comments)
+                      void *userdata, int comments, int trailing_comma)
 {
 	struct caj_ctx caj;
 	struct cajunfrag_ctx fragctx;
@@ -601,6 +601,10 @@ int cajunfrag_parse_2(const char *data, size_t sz,
 	{
 		caj_allow_comments(&caj);
 	}
+	if (trailing_comma)
+	{
+		caj_allow_trailing_comma(&caj);
+	}
 	ret = caj_feed(&caj, data, sz, 1);
 	if (ret != 0)
 	{
@@ -616,5 +620,11 @@ int cajunfrag_parse(const char *data, size_t sz,
                     const struct cajunfrag_handler_vtable *my_vtable,
                     void *userdata)
 {
-	return cajunfrag_parse_2(data, sz, my_vtable, userdata, 0);
+	return cajunfrag_parse_3(data, sz, my_vtable, userdata, 0, 0);
+}
+int cajunfrag_parse_2(const char *data, size_t sz,
+                      const struct cajunfrag_handler_vtable *my_vtable,
+                      void *userdata, int comments)
+{
+	return cajunfrag_parse_3(data, sz, my_vtable, userdata, comments, 0);
 }

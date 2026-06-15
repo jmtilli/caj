@@ -751,7 +751,7 @@ void cajun_ctx_delete(struct cajun_ctx *ctx)
 	free(ctx);
 }
 
-struct cajun_node *cajun_node_parse_2(const char *data, size_t sz, int comments)
+struct cajun_node *cajun_node_parse_3(const char *data, size_t sz, int comments, int trailing_comma)
 {
 	struct caj_ctx caj;
 	struct cajun_ctx cajun;
@@ -766,6 +766,10 @@ struct cajun_node *cajun_node_parse_2(const char *data, size_t sz, int comments)
 	if (comments)
 	{
 		caj_allow_comments(&caj);
+	}
+	if (trailing_comma)
+	{
+		caj_allow_trailing_comma(&caj);
 	}
 	cajun_ctx_init(&cajun);
 	ret = caj_feed(&caj, data, sz, 1);
@@ -788,5 +792,9 @@ struct cajun_node *cajun_node_parse_2(const char *data, size_t sz, int comments)
 }
 struct cajun_node *cajun_node_parse(const char *data, size_t sz)
 {
-	return cajun_node_parse_2(data, sz, 0);
+	return cajun_node_parse_3(data, sz, 0, 0);
+}
+struct cajun_node *cajun_node_parse_2(const char *data, size_t sz, int comments)
+{
+	return cajun_node_parse_3(data, sz, comments, 0);
 }

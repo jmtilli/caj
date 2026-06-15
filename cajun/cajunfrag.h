@@ -80,5 +80,8 @@ int cajunfrag_parse(const char *data, size_t sz,
 int cajunfrag_parse_2(const char *data, size_t sz,
                       const struct cajunfrag_handler_vtable *my_vtable,
                       void *userdata, int comments);
+int cajunfrag_parse_3(const char *data, size_t sz,
+                      const struct cajunfrag_handler_vtable *my_vtable,
+                      void *userdata, int comments, int trailing_comma);
 
 #endif
