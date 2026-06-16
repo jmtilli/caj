@@ -378,6 +378,7 @@ int pullcaj_get_event(struct pullcaj_ctx *caj, struct pullcaj_event_info *ev)
 		{
 			int ret;
 state12:
+			caj->i--;
 			ret = pullcaj_strip_comment(caj, ev);
 			caj->state = 12;
 			return ret;
