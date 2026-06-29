@@ -136,8 +136,10 @@ instexample3()
 }
 
 
+mkdir -p "$P/bin"
 instbin fast_json_pp
 instman fast_json_pp 1
+mkdir -p "$P/lib"
 instlib libcaj.a
 instlib libcaj.so.1
 instlib2 cajun libcajun.a
@@ -145,6 +147,7 @@ instlib2 cajun libcajun.so.1
 instsym libcaj.so
 instsymcajun libcajun.so
 
+mkdir -p "$P/include"
 instinc caj.h
 instinc pullcaj.h
 instinc caj_out.h
