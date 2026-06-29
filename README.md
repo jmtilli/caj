@@ -128,6 +128,23 @@ sudo ./install.sh /opt
 
 ...to install to /opt instead.
 
+## fast\_json\_pp
+
+CAJ contains one utility, fast\_json\_pp. It is neither as fast nor as flexible
+as jq. It is intended for simple reformatting tasks for JSON in a streaming
+manner. It may be useful as a JSON processor tool for embedded systems where
+the heavyweight tool jq would require too much space.
+
+The manual page in UNIX style fashion is available with `man fast\_json\_pp`.
+
+One difference of fast\_json\_pp with jq is that fast\_json\_pp supports
+comments from JSONC spec. So if you ever encounter a JSONC file, you can use
+fast\_json\_pp with a single `-C` option to remove comments, before piping the
+data to jq. With two `-C` options, comments are maintained but the JSON is
+reformatted, with one caveat: if a comment occurs between an object key and
+value, the location of the comment changes in the output, due to the
+architecture of CAJ where key-value pairs are handled as a single event.
+
 ## License
 
 All of the material related to CAJ is licensed under the following MIT
