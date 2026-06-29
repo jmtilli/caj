@@ -135,7 +135,7 @@ as jq. It is intended for simple reformatting tasks for JSON in a streaming
 manner. It may be useful as a JSON processor tool for embedded systems where
 the heavyweight tool jq would require too much space.
 
-The manual page in UNIX style fashion is available with `man fast\_json\_pp`.
+The manual page in UNIX style fashion is available with `man fast_json_pp`.
 
 One difference of fast\_json\_pp with jq is that fast\_json\_pp supports
 comments from JSONC spec. So if you ever encounter a JSONC file, you can use
