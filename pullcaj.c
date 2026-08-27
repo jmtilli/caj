@@ -453,18 +453,35 @@ state1:
 			{
 				case 'b':
 					res = pullcaj_put_key(caj, '\b');
+					caj->mode = CAJ_MODE_KEYSTRING;
 					break;
 				case 'f':
 					res = pullcaj_put_key(caj, '\f');
+					caj->mode = CAJ_MODE_KEYSTRING;
 					break;
 				case 'n':
 					res = pullcaj_put_key(caj, '\n');
+					caj->mode = CAJ_MODE_KEYSTRING;
 					break;
 				case 'r':
 					res = pullcaj_put_key(caj, '\r');
+					caj->mode = CAJ_MODE_KEYSTRING;
 					break;
 				case 't':
 					res = pullcaj_put_key(caj, '\t');
+					caj->mode = CAJ_MODE_KEYSTRING;
+					break;
+				case '/':
+					res = pullcaj_put_key(caj, '/');
+					caj->mode = CAJ_MODE_KEYSTRING;
+					break;
+				case '\\':
+					res = pullcaj_put_key(caj, '\\');
+					caj->mode = CAJ_MODE_KEYSTRING;
+					break;
+				case '"':
+					res = pullcaj_put_key(caj, '"');
+					caj->mode = CAJ_MODE_KEYSTRING;
 					break;
 				case 'u':
 					caj->mode = CAJ_MODE_KEYSTRING_UESCAPE;
@@ -588,18 +605,35 @@ state1:
 			{
 				case 'b':
 					res = pullcaj_put_val(caj, '\b');
+					caj->mode = CAJ_MODE_STRING;
 					break;
 				case 'f':
 					res = pullcaj_put_val(caj, '\f');
+					caj->mode = CAJ_MODE_STRING;
 					break;
 				case 'n':
 					res = pullcaj_put_val(caj, '\n');
+					caj->mode = CAJ_MODE_STRING;
 					break;
 				case 'r':
 					res = pullcaj_put_val(caj, '\r');
+					caj->mode = CAJ_MODE_STRING;
 					break;
 				case 't':
 					res = pullcaj_put_val(caj, '\t');
+					caj->mode = CAJ_MODE_STRING;
+					break;
+				case '/':
+					res = pullcaj_put_val(caj, '/');
+					caj->mode = CAJ_MODE_STRING;
+					break;
+				case '\\':
+					res = pullcaj_put_val(caj, '\\');
+					caj->mode = CAJ_MODE_STRING;
+					break;
+				case '"':
+					res = pullcaj_put_val(caj, '"');
+					caj->mode = CAJ_MODE_STRING;
 					break;
 				case 'u':
 					caj->mode = CAJ_MODE_STRING_UESCAPE;

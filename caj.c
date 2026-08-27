@@ -405,18 +405,35 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 			{
 				case 'b':
 					res = caj_put_key(caj, '\b');
+					caj->mode = CAJ_MODE_KEYSTRING;
 					break;
 				case 'f':
 					res = caj_put_key(caj, '\f');
+					caj->mode = CAJ_MODE_KEYSTRING;
 					break;
 				case 'n':
 					res = caj_put_key(caj, '\n');
+					caj->mode = CAJ_MODE_KEYSTRING;
 					break;
 				case 'r':
 					res = caj_put_key(caj, '\r');
+					caj->mode = CAJ_MODE_KEYSTRING;
 					break;
 				case 't':
 					res = caj_put_key(caj, '\t');
+					caj->mode = CAJ_MODE_KEYSTRING;
+					break;
+				case '/':
+					res = caj_put_key(caj, '/');
+					caj->mode = CAJ_MODE_KEYSTRING;
+					break;
+				case '\\':
+					res = caj_put_key(caj, '\\');
+					caj->mode = CAJ_MODE_KEYSTRING;
+					break;
+				case '"':
+					res = caj_put_key(caj, '"');
+					caj->mode = CAJ_MODE_KEYSTRING;
 					break;
 				case 'u':
 					caj->mode = CAJ_MODE_KEYSTRING_UESCAPE;
@@ -540,18 +557,35 @@ int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof)
 			{
 				case 'b':
 					res = caj_put_val(caj, '\b');
+					caj->mode = CAJ_MODE_STRING;
 					break;
 				case 'f':
 					res = caj_put_val(caj, '\f');
+					caj->mode = CAJ_MODE_STRING;
 					break;
 				case 'n':
 					res = caj_put_val(caj, '\n');
+					caj->mode = CAJ_MODE_STRING;
 					break;
 				case 'r':
 					res = caj_put_val(caj, '\r');
+					caj->mode = CAJ_MODE_STRING;
 					break;
 				case 't':
 					res = caj_put_val(caj, '\t');
+					caj->mode = CAJ_MODE_STRING;
+					break;
+				case '/':
+					res = caj_put_val(caj, '/');
+					caj->mode = CAJ_MODE_STRING;
+					break;
+				case '\\':
+					res = caj_put_val(caj, '\\');
+					caj->mode = CAJ_MODE_STRING;
+					break;
+				case '"':
+					res = caj_put_val(caj, '"');
+					caj->mode = CAJ_MODE_STRING;
 					break;
 				case 'u':
 					caj->mode = CAJ_MODE_STRING_UESCAPE;
