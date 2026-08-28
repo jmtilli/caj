@@ -214,7 +214,7 @@ static int caj_internal_put_string(struct caj_out_ctx *ctx, const char *s, size_
 			}
 			else if (s[i] == '\\')
 			{
-				ret = ctx->datasink(ctx, "\\\"", 2);
+				ret = ctx->datasink(ctx, "\\\\", 2);
 				if (ret)
 				{
 					return ret;
