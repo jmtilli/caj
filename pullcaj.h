@@ -5,6 +5,10 @@
 #include "caj.h" // enum caj_mode
 #include "streamingatof.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct pullcaj_ctx {
 	enum caj_mode mode;
 	unsigned char sz; // uescape or token
@@ -95,5 +99,9 @@ int pullcaj_get_event(struct pullcaj_ctx *pc, struct pullcaj_event_info *ev);
 void pullcaj_free(struct pullcaj_ctx *pc);
 
 void pullcaj_delete(struct pullcaj_ctx *pc);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

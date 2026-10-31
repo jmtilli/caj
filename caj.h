@@ -4,6 +4,10 @@
 #include <stddef.h>
 #include "streamingatof.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct caj_handler;
 
 struct caj_handler_vtable {
@@ -87,5 +91,9 @@ void caj_free(struct caj_ctx *caj);
 void caj_delete(struct caj_ctx *caj);
 
 int caj_feed(struct caj_ctx *caj, const void *vdata, size_t usz, int eof);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
