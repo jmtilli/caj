@@ -4,6 +4,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct caj_out_ctx {
 	int (*datasink)(struct caj_out_ctx *ctx, const char *data, size_t sz);
 	void *userdata;
@@ -62,5 +66,9 @@ struct caj_out_ctx *caj_out_new(int tabs, size_t indentamount,
 
 
 void caj_out_delete(struct caj_out_ctx *ctx);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
